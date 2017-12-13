@@ -4,4 +4,4 @@ Supplement to Comparison and evaluation of integrative methods for the analysis 
 
 Bettina M. Pucher, Oana A. Zeleznik and Gerhard G. Thallinger
 
-R code to used to generate results and figures.
+R code used to generate results and figures.
