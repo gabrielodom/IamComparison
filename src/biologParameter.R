@@ -10,6 +10,12 @@
 #       'feature' is depending on data type a gene, a methylon site etc.
 
 #####------------------------------------------------------------------
+# parameters required by TCGA Assembler 
+#####------------------------------------------------------------------
+.TCGA.assembler.dir = "D:/TCGA-Assembler/"
+.sCancer = "BRCA"
+
+#####------------------------------------------------------------------
 # parameters for the preprocessing of biological dataset
 #####------------------------------------------------------------------
 
@@ -19,6 +25,12 @@
 # name of directory to save preprocessed data
 .current.biolog = "less_10p_NA-eval-seed2"
 
+# Features to select in percent. (Refere to log file in biologicalData!)
+.pr = c(1.14, 1.36) # BRCA
+#.pr = c(1.95, 0.56) # LUAD
+#.pr = c(3.53, 1.9) # KIRC
+#.pr = c(1.57, 3.22) # COAD
+  
 #####------------------------------------------------------------------
 # Number of subsets and percentage of training samples for validation
 #####------------------------------------------------------------------
@@ -44,9 +56,6 @@ set.seed(987654321)
 # iterations on optimization function
 .niter = 100 # default 25
 
-# Features to select in percent. (Refere to log file in biologicalData!)
-.pr = c(1.14, 1.36)
-
 # create directoy name part for current sCCA run
 name = paste0(sub("\\.", "_", sum(.pr)))
 
@@ -62,9 +71,6 @@ serial = ""
 
 # set e.g. when settings remain the same but data set has changed
 serial = ""
-
-# Features to select in percent. (Refere to log file in biologicalData!)
-.pr = c(1.14, 1.36)
 
 # parameters handed over to MALA
 # for documentation see the file bin\MALA\MALA-COMMAND-LINE-README.txt
@@ -103,11 +109,17 @@ serial = ""
 # set e.g. when settings remain the same but data set has changed
 serial = ""
 
-# Features to select in percent. (Refere to log file in biologicalData!)
-.pr = c(1.14, 1.36)
-
 # name of current NMF result directory
 .current.NMF = paste0(.current.biolog, "-", sub(".", "_", sum(.pr), fixed = T), serial)
+
+#####------------------------------------------------------------------
+# parameters for GSiCluster on biological datasets
+#####------------------------------------------------------------------
+.GSiC.lambda = 70
+.GSiC.tlambda = 1
+.GSiC.iter = 100
+  
+.current.GSiC = paste0(.current.biolog, "-", "test")
 
 #####------------------------------------------------------------------
 # parameters for method comparison on biological data
@@ -115,11 +127,11 @@ serial = ""
 .sCCA.run = .current.sCCA
 .NMF.run = .current.NMF
 .MALA.run = .current.MALA
+.GSiC.run = .current.GSiC
 
 add = "-Gs960"
 .current.comp = paste0(.current.biolog, "-", 
                        sub(".", "_", sum(.pr), fixed = T), add)
-  
 
 #####------------------------------------------------------------------
 # do not change the .type parameter!

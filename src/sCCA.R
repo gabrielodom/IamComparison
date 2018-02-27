@@ -270,8 +270,8 @@ if(.type == "synthet"){
   names(data) = data.names
   
   # create array of penalties to test 
-  penalties = createPenalties(n.penalties = 100, m.features = sapply(data, ncol),
-                              factor.min = 0.01, factor.max = 0.1)
+  penalties = createPenalties(n.penalties = 400, m.features = sapply(data, ncol),
+                              factor.min = 0.01, factor.max = 0.4)
 
   # calculate sparse CCA for penalty pairs 
   num_nz_weights = matrix(NA, nrow = nrow(penalties), ncol = ncol(penalties))

@@ -1,1 +1,4 @@
 http://genome.tugraz.at/IamComparison/data/raw/tcga_brca.RData
+http://genome.tugraz.at/IamComparison/data/raw/tcga_luad.RData
+http://genome.tugraz.at/IamComparison/data/raw/tcga_kirc.RData
+http://genome.tugraz.at/IamComparison/data/raw/tcga_coad.RData

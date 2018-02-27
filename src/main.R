@@ -10,10 +10,16 @@ rm(list = ls(all.names = TRUE))
 # Please enter the name of the list of datasets and 
 # put the R-Object into .project.dir/data/raw
 .dataset.list = "tcga_brca.RData"
+#.dataset.list = "tcga_luad.RData"
+#.dataset.list = "tcga_kirc.RData" 
+#.dataset.list = "tcga_coad.RData" 
 
 # choose a name for the current run
 # all relative paths to project subfolders are set automatically
 .current.run = "GeneExp_Met_2DS"
+#.current.run = "LUAD_GeneExp_Met"
+#.current.run = "KIRC_GeneExp_Met"
+#.current.run = "COAD_GeneExp_Met"
 
 source(file.path(.project.dir, "src/setDirPath.R"))
 
@@ -35,6 +41,12 @@ source(file.path(.project.dir, "src/setDirPath.R"))
 #biocLite("SPIA")
 
 ### CRAN
+#install.packages("httr")                       # TCGA Assembler
+#install.packages("HGNChelper")                 # TCGA Assembler
+#install.packages("RCurl")                      # TCGA Assembler
+#install.packages("rjson")                      # TCGA Assembler
+#install.packages("stringr")                    # TCGA Assembler
+#install.pakcages("data.table")                 # TCGA Assembler 
 #install.packages("gplots")                     # synthetic data
 #install.packages("PMA")                        # sCCA
 #install.packages("abind")                      # MALA
@@ -52,6 +64,9 @@ source(file.path(.project.dir, "src/setDirPath.R"))
 #####-------------------------------------------------------------#####
 # set parameteres as specified in the parameter file
 source(file.path(.src.dir, "biologParameter.R"))
+
+# starts TCGA data download using TCGA Assembler tool
+source(file.path(.src.dir, "downloadTCGAData.R"))
 
 # starts TCGA data preprocessing
 source(file.path(.src.dir, "preprocTCGAData.R"))

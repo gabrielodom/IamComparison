@@ -7,7 +7,7 @@
 #####           VennDiagram, xtable, gridExtra                    #####
 ##### author: B. Pucher                                           #####  
 ##### date created: 30/04/2015                                    #####
-##### last change:  09/11/2017                                    #####
+##### last change:  24/01/2018                                    #####
 #######################################################################
 
 rm(list = ls())
@@ -25,6 +25,7 @@ library(gridExtra)
 library(gplots)
 library(ggplot2)
 library(reshape2)
+library(scales)
 
 #######################################################################
 #####                                                             #####
@@ -347,8 +348,7 @@ mergeTables = function(fname, header, merge_by){
   merged_tab = Reduce(function(x, y) merge(x, y, by = merge_by, sort = FALSE, all = TRUE), 
                       methods_tab)
   colnames(merged_tab)[which(!is.element(colnames(merged_tab), merge_by))] = 
-    paste(colnames(merged_tab[which(colnames(merged_tab) %in% merge_by)]), 
-          rep(methods, each = (ncol(merged_tab)-length(merge_by))/length(methods)))
+          rep(methods, each = (ncol(merged_tab)-length(merge_by))/length(methods))
   write.table(merged_tab[order(merged_tab[,grep("Size$|GeneSymbol", colnames(merged_tab))], 
                                decreasing = TRUE),], file.path(sub.dir.files, fname),
               sep = "\t", quote = FALSE, row.names = FALSE)
@@ -562,8 +562,10 @@ for(sym in methyl.na.unique) {
   methyl.EG[sym] = ifelse(length(id) == 0, yes = NA, no = id)
 }
 # Add symbol mappings to annotation table
-# identical(names(methyl.EG), feature_des$Methylation[,"GeneSymbol"]) # TRUE
-feature_des$Methylation = cbind(feature_des$Methylation, EntrezID = methyl.EG)
+methyl.EG.len = ifelse(names(methyl.EG)[length(methyl.EG)] == "", 
+                       yes = length(methyl.EG)-1, no = length(methyl.EG)) 
+# identical(names(methyl.EG)[1:methyl.EG.len], feature_des$Methylation[,"GeneSymbol"]) # TRUE
+feature_des$Methylation = cbind(feature_des$Methylation, EntrezID = methyl.EG[1:methyl.EG.len])
 
 # Numbers of maps to genes (Entrez ID) in each method per data type (use lookup table)
 sCCA_result_genes_maps_EG = mapply(mapFeaturesToEG, features = sCCA_result,
@@ -801,7 +803,8 @@ for(i in c("BP", "MF", "CC")) {
   for(j in 1:length(.data.to.integrate)){
 
     sets.list.EG = lapply(gene.set.list.EG, "[[", j)
-    
+    sets.list.EG = sets.list.EG[sapply(sets.list.EG, length) > 0] # remove empty sets 
+  
     # create parameter objects for GO analysis 
     params.list = lapply(sets.list.EG, createParams,
                             universe = data.universe.EG[[j]], 
@@ -810,7 +813,7 @@ for(i in c("BP", "MF", "CC")) {
     
     # do GO analysis for current data type
     over.list = lapply(params.list, hyperGTest)
-    
+
     # save GO analysis result objects 
     saveRDS(over.list, file.path(sub.dir.RData,
                                  paste0(.data.to.integrate[j], "_GO", i, 
@@ -845,12 +848,13 @@ param.FDR = 0.2
 for(i in c("BP", "MF", "CC")){
   for(j in 1:length(.data.to.integrate)) {
     
+    
     over.list = readRDS(file.path(sub.dir.RData, 
                                   paste0(.data.to.integrate[j], "_GO", i, 
                                          ifelse(param.conditional,
                                                 yes = paste0("_cond_p", sub("\\.", "_", param.pval), ".RData"),
-                                                no = ".RData"))))
-
+                                                no = ".RData")))) 
+      
     # make number of associated GO terms accessable within result object     
     all.summary = lapply(over.list, summary, pvalue = 2, 
                          categorySize  = param.cat.size)
@@ -859,7 +863,7 @@ for(i in c("BP", "MF", "CC")){
     all.summary.count = lapply(all.summary, function(a) {
       subset(a, subset = a$Count != 0)
     })
-      
+    
     # do p-value correction and remove not-significant terms
     over.summary = lapply(all.summary.count, function(a) {
       p.tmp = p.adjust(a$Pvalue, corr.method, nrow(a))
@@ -867,27 +871,32 @@ for(i in c("BP", "MF", "CC")){
     
     # extract GO IDs of different domains
     GO.sets = lapply(over.summary, "[[", paste0("GO", i, "ID"))
-  
+    GO.sets = GO.sets[methods]
+    empty.set = which(sapply(GO.sets, is.null))
+    if(length(empty.set) > 0) {
+      GO.sets[[empty.set]] = character(0)
+    }
+    
     # plot Venn diagrams for each Ontology and each data type
     names(GO.sets) = paste0(methods, " (", lapply(GO.sets, length), ")") 
     cat("Cardinality of the union of GO term for", i, "in dataset", 
         .data.to.integrate[j], ":", length(Reduce(union, GO.sets)), "\n")
     tmp = venn.diagram(GO.sets, filename = file.path(sub.dir.figures,
-                   paste0("venn_", .data.to.integrate[j], "_GO", i, 
-                          ifelse(param.conditional,
-                                 yes = paste0("_cond_p", sub("\\.", "_", param.pval)),
-                                 no = ""), 
-                          "_catsize_", param.cat.size, 
-                          "_corr_", corr.method, 
-                          "_", sub("\\.", "_", param.FDR), ".png")),
-                 main = paste("GO", i, ":", .data.to.integrate[j]),
-                 main.cex = 2, cex = 1.6,
-                 cat.cex = 2, 
-                 cat.pos = c(-30,30,180), 
-                 cat.dist = c(0.07, 0.07, 0.04), # alpha = c(0.35,0.35,0.5),
-                 print.mode = c("raw"), sigdigs = 1,
-                 lty = "solid", euler.d = FALSE, scale = FALSE)
-    
+                                                     paste0("venn_", .data.to.integrate[j], "_GO", i, 
+                                                            ifelse(param.conditional,
+                                                                   yes = paste0("_cond_p", sub("\\.", "_", param.pval)),
+                                                                   no = ""), 
+                                                            "_catsize_", param.cat.size, 
+                                                            "_corr_", corr.method, 
+                                                            "_", sub("\\.", "_", param.FDR), ".png")),
+                       main = paste("GO", i, ":", .data.to.integrate[j]),
+                       main.cex = 2, cex = 1.6,
+                       cat.cex = 2, 
+                       cat.pos = c(-30,30,180), 
+                       cat.dist = c(0.07, 0.07, 0.04), # alpha = c(0.35,0.35,0.5),
+                       print.mode = c("raw"), sigdigs = 1,
+                       lty = "solid", euler.d = FALSE, scale = FALSE)
+
   }
   
   over.list.all = readRDS(file.path(sub.dir.RData, 
@@ -899,7 +908,7 @@ for(i in c("BP", "MF", "CC")){
   # make number of associated GO terms accessable within result object
   all.summary.all = lapply(over.list.all, summary, pvalue = 2,
                            categorySize = param.cat.size)
-
+  
   # consider only terms with Count != 0 for the correction
   all.summary.all.count = lapply(all.summary.all, function(a) {
     subset(a, subset = a$Count != 0)
@@ -918,20 +927,20 @@ for(i in c("BP", "MF", "CC")){
   cat("Cardinality of the union of GO term for", i, "in all datasets:", 
       length(Reduce(union, GO.sets.all)), "\n")
   tmp = venn.diagram(GO.sets.all, filename = file.path(sub.dir.figures,
-                                             paste0("venn_all_GO", i, 
-                                                    ifelse(param.conditional,
-                                                           yes = paste0("_cond_p", sub("\\.", "_", param.pval)),
-                                                           no = ""),
-                                                    "_catsize_", param.cat.size,
-                                                    "_corr_", corr.method, 
-                                                    "_", sub("\\.", "_", param.FDR), ".png")),
-               main = paste("GO", i, ": all data types"),
-               main.cex = 2, cex = 1.6,
-               cat.cex = 2, 
-               cat.pos = c(-30,30,180), 
-               cat.dist = c(0.07, 0.07, 0.04), # alpha = c(0.35,0.35,0.5),
-               print.mode = c("raw"), sigdigs = 1,
-               lty = "solid", euler.d = FALSE, scale = FALSE)
+                                                       paste0("venn_all_GO", i, 
+                                                              ifelse(param.conditional,
+                                                                     yes = paste0("_cond_p", sub("\\.", "_", param.pval)),
+                                                                     no = ""),
+                                                              "_catsize_", param.cat.size,
+                                                              "_corr_", corr.method, 
+                                                              "_", sub("\\.", "_", param.FDR), ".png")),
+                     main = paste("GO", i, ": all data types"),
+                     main.cex = 2, cex = 1.6,
+                     cat.cex = 2, 
+                     cat.pos = c(-30,30,180), 
+                     cat.dist = c(0.07, 0.07, 0.04), # alpha = c(0.35,0.35,0.5),
+                     print.mode = c("raw"), sigdigs = 1,
+                     lty = "solid", euler.d = FALSE, scale = FALSE)
   
   tmp = venn.diagram(GO.sets.all, filename = file.path(sub.dir.figures,
                                                        paste0("pub_venn_all_GO", i,
@@ -951,7 +960,7 @@ for(i in c("BP", "MF", "CC")){
                      imagetype = "tiff",
                      margin = 0.01,
                      euler.d = FALSE, scale = FALSE)
-
+  
   # ******* START --- create publication ready venn ***********
   names(GO.sets.all) = paste0(methods, " (", lapply(GO.sets.all, length), ")")
   postscript(file = file.path(sub.dir.figures,
@@ -966,16 +975,16 @@ for(i in c("BP", "MF", "CC")){
              width = 6, height = 6,
              family = "serif", horizontal = FALSE)
   tmp = venn.diagram(GO.sets.all, filename = NULL,
-               width = 7000, height = 7000, resolution = 1200,
-               #main = paste("GO", i, ": all data types"), main.cex = 2,
-               cex = 2.8, cat.cex = 2.8,
-               cat.pos = c(-25,25,180),
-               cat.dist = c(0.08, 0.08, 0.06), # alpha = c(0.35,0.35,0.5),
-               print.mode = c("raw"), sigdigs = 1,
-               lty = "solid", lwd = 3,
-               imagetype = "tiff",
-               margin = 0.01,
-               euler.d = FALSE, scale = FALSE)
+                     width = 7000, height = 7000, resolution = 1200,
+                     #main = paste("GO", i, ": all data types"), main.cex = 2,
+                     cex = 2.8, cat.cex = 2.8,
+                     cat.pos = c(-25,25,180),
+                     cat.dist = c(0.08, 0.08, 0.06), # alpha = c(0.35,0.35,0.5),
+                     print.mode = c("raw"), sigdigs = 1,
+                     lty = "solid", lwd = 3,
+                     imagetype = "tiff",
+                     margin = 0.01,
+                     euler.d = FALSE, scale = FALSE)
   grid.draw(tmp)
   invisible(dev.off())
   # ******* END ----- create publication ready venn ***********
@@ -990,6 +999,7 @@ cat("Compare results on Pathway level:\n")
 
 db = "reactome"
 pws = pathways("hsapiens", db)
+
 cat("Get all pathways in", toupper(db), "(", length(pws), ") ...\n")
 pw.set.name = "pw4SPIA"
 
@@ -1048,8 +1058,24 @@ for(i in 1:length(.data.to.integrate)){
 
   # run Singnaling Pathways Impact Analysis (SPIA)
   cat("\nRun SPIA for", .data.to.integrate[i], "features and save results as RData.\n")
-  res.list = mapply(runSPIA, de = subsets.lfc.EG, all = data.universe.EG[i], 
-               pathwaySetName = pw.set.name, SIMPLIFY = FALSE)
+  res.list = mapply(function(de, all, pathwaySetName) {
+    if(length(de) > 0){
+      runSPIA(de, all, pathwaySetName)
+    } else  {
+      data.frame(Name = character(0), 
+                 pSize = character(0), 
+                 NDE = character(0),
+                 pNDE = logical(0),
+                 tA = logical(0),
+                 pPERT = logical(0),
+                 pG = logical(0),
+                 pGFdr = numeric(0),
+                 pGFWER = numeric(0),
+                 Status = logical(0), 
+                 stringsAsFactors = FALSE)
+    }
+  }, de = subsets.lfc.EG, all = data.universe.EG[i], pathwaySetName = pw.set.name, 
+  SIMPLIFY = FALSE)
   
   # save SPIA result objects 
   saveRDS(res.list, file.path(sub.dir.RData, 
@@ -1087,7 +1113,12 @@ for(poi in poi.vc) {
                                          "_SPIA", ".RData")))
       # extract pathway names 
       pw.sets = lapply(pw.list, function(l) {
-        l$Name[which(l[poi] < alpha)] })
+        if(nrow(l) > 0){
+          l$Name[which(l[poi] < alpha)] 
+          } else {
+          character(0)
+        } })
+        
       
       # plot Venn diagrams of pathways for each data type
       names(pw.sets) = paste0(methods, " (", lapply(pw.sets, length), ")")
@@ -1181,8 +1212,14 @@ names(ft.set.list.anno) = methods
 
 # get gene names corresponding to Entrez IDs and add to table
 ft.set.list.names = lapply(ft.set.list.anno, function(s) {
-  lapply(s, function(r) {
-    gene.names = select(org.Hs.eg.db, keys = r$EntrezID, columns = "GENENAME", keytype = "ENTREZID")
+  lapply(s, function(r) { 
+    if(nrow(r) > 0) {
+      gene.names = select(org.Hs.eg.db, keys = r$EntrezID, columns = "GENENAME", keytype = "ENTREZID")
+    } else {
+	gene.names = data.frame(ENTREZID = character(0),
+					GENENAME = character(0),
+					stringsAsFactors = FALSE)
+    } 
     names.df = cbind(r[,grep("^y$", colnames(r), invert = TRUE)], 
                      GeneName = gene.names$GENENAME, stringsAsFactors = FALSE)
   })
@@ -1190,9 +1227,11 @@ ft.set.list.names = lapply(ft.set.list.anno, function(s) {
          
 # print tables
 mapply(function(df, n) { mapply( function(df, n) {
-  createTables(df[order(df$GeneSymbol), ], n)}, 
-  df = df, n = paste(n, names(df), "ft", sep = "_"))}, 
-  df = ft.set.list.names, n = names(ft.set.list.names))
+  if(nrow(df) > 0){
+    createTables(df[order(df$GeneSymbol), ], n)
+  }}, df = df, n = paste(n, names(df), "ft", sep = "_"))}, 
+    df = ft.set.list.names, n = names(ft.set.list.names))
+
 
 #####------------------------------------------------------------------
 # Tables with GO terms associated to each method result
@@ -1227,6 +1266,17 @@ for(i in c("BP", "MF", "CC")){
     over.summary.sub = lapply(over.summary.order, function(x) {
       subset(x, select = grep("GO|Term|Size|Padjust", colnames(x))) })
     
+    # handel potentially empty result tables
+    over.summary.sub = over.summary.sub[methods]    
+    empty.tab = which(sapply(over.summary.sub, is.null))
+    if(length(empty.tab) > 0) {
+      over.summary.sub[[empty.tab]] = data.frame(GOID = character(0),
+								 Size = numeric(0),
+								 Term = character(0),
+								 Padjust = numeric(0),
+								 stringsAsFactors = FALSE)
+    }
+
     # plot tables: GO terms ordered by p-value 
     mapply(function(x, m) {
       items = nrow(x) #min(nrow(x), 60)
@@ -1311,9 +1361,14 @@ for(poi in poi.vc) {
       
       pw.list = readRDS(file.path(sub.dir.RData,
                                   paste0(.data.to.integrate[j], "_SPIA.RData")))
-      
+
       pw.sets = lapply(pw.list, function(a) {
-        a[which(a[poi] <= alpha),] })
+        if(nrow(a) > 0){
+          a[which(a[poi] <= alpha),] 
+        } else {
+          a
+        } })
+
       pw.sets.order = lapply(pw.sets, function(x) {
         x[order(x["pSize"], decreasing = TRUE),] })
       pw.sets.sub = lapply(pw.sets.order, function(x) {
@@ -1367,8 +1422,7 @@ for(poi in poi.vc) {
       fname = paste0(.data.to.integrate[j], 
                      "_PWs_", poi, "_", 
                      sub(".", "_", alpha, fixed = TRUE),
-                     ifelse(nrow(x) > 50, yes = "", #"_top50",
-                            no = ""), ".txt")
+                     ".txt")
       
       mergeTables(fname, header = c("Name", "pSize", "pGFdr", "pGFdr.1", "Status"),
                   merge_by = c("Name", "pSize"))
@@ -1376,9 +1430,8 @@ for(poi in poi.vc) {
     
     # create file names to read
     fname = paste0("PWs_", poi, "_", 
-                   sub(".", "_", alpha, fixed = TRUE),
-                   ifelse(nrow(x) > 50, yes = "", #"_top50",
-                          no = ""), ".txt")
+                   sub(".", "_", alpha, fixed = TRUE), 
+                   ".txt")
     
     mergeTables(fname, header = c("Name", "pSize", "pGFdr", "pGFdr.1", "Status"),
                 merge_by = c("Name", "pSize"))
@@ -1529,51 +1582,57 @@ p.val = list(fp.kegg, fp.pam, fp.sorlie, fp.hu, fp.bedo, fp.immune, fp.target)))
 # get cancer signatures Entrez IDs for multi-venn diagrams
 
 # draw Venn diagrams for each method result with selected cancer signatures
-sCCA.signatures = list(gene.set.list.total.EG$sCCA, in.kegg.univ, in.pam50.univ, in.hu306.univ)
-names(sCCA.signatures) = c("sCCA", "KEGG", "PAM", "Hu")
+sCCA.signatures = list(gene.set.list.total.EG$sCCA, in.kegg.univ, 
+                       in.pam50.univ, in.target.univ)
+names(sCCA.signatures) = c("sCCA", "KEGG", "PAM", "Target")
 
-NMF.signatures = list(gene.set.list.total.EG$NMF, in.kegg.univ, in.pam50.univ, in.hu306.univ)
-names(NMF.signatures) = c("NMF", "KEGG", "PAM", "Hu")
+NMF.signatures = list(gene.set.list.total.EG$NMF, in.kegg.univ, 
+                      in.pam50.univ, in.target.univ)
+names(NMF.signatures) = c("NMF", "KEGG", "PAM", "Target")
 
-MALA.signatures = list(gene.set.list.total.EG$MALA, in.kegg.univ, in.pam50.univ, in.hu306.univ)
-names(MALA.signatures) = c("MALA", "KEGG", "PAM", "Hu")
+MALA.signatures = list(gene.set.list.total.EG$MALA, in.kegg.univ, 
+                       in.pam50.univ, in.target.univ)
+names(MALA.signatures) = c("MALA", "KEGG", "PAM", "Target")
 
 tmp = venn.diagram(sCCA.signatures,
              filename = file.path(sub.dir.figures, paste0("venn_sCCA_signatures.png")),
-             cex = 1.6, cat.cex = 2, col = c("black", "black", "red", "black"),
-             cat.col = c(rep("black", 3), "red"), #cat.dist = c(0.07, 0.07, 0.05),
-             label.col = c("black", "red", "red", "black", "red", "red", "red", "red",
-                           "black", "red", "red", "black", "black", "black", "black"),
+             cex = 1.6, cat.cex = 2, col = c("red", "black", "black", "black"),
+             cat.col = c("red", rep("black", 3)), #cat.dist = c(0.07, 0.07, 0.05),
+             label.col = c("black", "black", "black", "red", "red", "red", "black", 
+                           "black", "red", "red", "red", "red", "black", 
+                           "black", "red"),
              print.mode = c("raw"), sigdigs = 1,
              lty = "solid") #cat.pos = c(-30,30,180))
 
 tmp = venn.diagram(NMF.signatures,
              filename = file.path(sub.dir.figures, paste0("venn_NMF_signatures.png")),
-             cex = 1.6, cat.cex = 2, col = c("black", "black", "red", "black"),
-             cat.col = c(rep("black", 3), "red"), #cat.dist = c(0.07, 0.07, 0.05),
-             label.col = c("black", "red", "red", "black", "red", "red", "red", "red",
-                           "black", "red", "red", "black", "black", "black", "black"),
+             cex = 1.6, cat.cex = 2, col = c("red", "black", "black", "black"),
+             cat.col = c("red", rep("black", 3)), #cat.dist = c(0.07, 0.07, 0.05),
+             label.col = c("black", "black", "black", "red", "red", "red", "black", 
+                           "black", "red", "red", "red", "red", "black", 
+                           "black", "red"),
              print.mode = c("raw"), sigdigs = 1,
              lty = "solid") #cat.pos = c(-30,30,180))
 
 tmp = venn.diagram(MALA.signatures,
              filename = file.path(sub.dir.figures, paste0("venn_MALA_signatures.png")),
-             cex = 1.6, cat.cex = 2, col = c("black", "black", "red", "black"),
-             cat.col = c(rep("black", 3), "red"), #cat.dist = c(0.07, 0.07, 0.05),
-             label.col = c("black", "red", "red", "black", "red", "red", "red", "red",
-                           "black", "red", "red", "black", "black", "black", "black"),
+             cex = 1.6, cat.cex = 2, col = c("red", "black", "black", "black"),
+             cat.col = c("red", rep("black", 3)), #cat.dist = c(0.07, 0.07, 0.05),
+             label.col = c("black", "black", "black", "red", "red", "red", "black", 
+                           "black", "red", "red", "red", "red", "black", 
+                           "black", "red"),
              print.mode = c("raw"), sigdigs = 1,
              lty = "solid") #cat.pos = c(-30,30,180))
 
 # venn diagrams of selected cancer signatures with all three methods
 kegg.signatures = c(gene.set.list.total.EG, list(in.kegg.univ))
-names(kegg.signatures) = c("sCCA (479)    ",  "  NMF (488)",  "MALA (507)  ",  "  KEGG (307)")
+names(kegg.signatures) = c("sCCA (934)    ",  "  NMF (951)",  "MALA (387)  ",  "  KEGG (306)")
 
 pam.signatures = c(gene.set.list.total.EG, list(in.pam50.univ))
-names(pam.signatures) = c("sCCA (479)    ",  "  NMF (488)",  "MALA (507)  ",  "  PAM (50)")
+names(pam.signatures) = c("sCCA (934)    ",  "  NMF (951)",  "MALA (387)  ",  "  PAM (49)")
 
-hu.signatures = c(gene.set.list.total.EG, list(in.hu306.univ))
-names(hu.signatures) = c("sCCA (479)    ",  "  NMF (488)",  "MALA (507)  ",  "  Hu (219)")
+target.signatures = c(gene.set.list.total.EG, list(in.target.univ))
+names(target.signatures) = c("sCCA (934)    ",  "  NMF (951)",  "MALA (387)  ",  " Target (135)")
 
 tmp = venn.diagram(kegg.signatures,
              filename = file.path(sub.dir.figures, paste0("venn_KEGG_signatures.png")),
@@ -1681,8 +1740,8 @@ grid.draw(tmp);
 invisible(dev.off())
 # ******* END --- create publication ready venn ***********
 
-tmp = venn.diagram(hu.signatures,
-             filename = file.path(sub.dir.figures, paste0("venn_Hu_signatures.png")),
+tmp = venn.diagram(target.signatures,
+             filename = file.path(sub.dir.figures, paste0("venn_Target_signatures.png")),
              cex = 1.6, cat.cex = 1.8, 
              col = c("black", "black", "red", "black"),
              cat.col = c(rep("black", 3), "red"), 
@@ -1694,9 +1753,9 @@ tmp = venn.diagram(hu.signatures,
              lty = "solid")
 
 # ******* START --- create publication ready venn ***********
-tmp <- venn.diagram(hu.signatures, width = 10000, height = 9000,
+tmp <- venn.diagram(target.signatures, width = 10000, height = 9000,
                     units = "px", resolution = 1200,
-                    filename = file.path(sub.dir.figures, "venn_Hu_signatures.tif"), 
+                    filename = file.path(sub.dir.figures, "venn_Target_signatures.tif"), 
                     # main = "Feature sets: all data types", main.cex = 2,
                     cex = 2.4, cat.cex = 2.4, 
                     col = c("black", "black", "red", "black"),
@@ -1712,10 +1771,10 @@ tmp <- venn.diagram(hu.signatures, width = 10000, height = 9000,
                     euler.d = FALSE, scale = FALSE);
 
 
-postscript(file = file.path(sub.dir.figures, "venn_Hu_signatures.eps"), 
+postscript(file = file.path(sub.dir.figures, "venn_Target_signatures.eps"), 
            onefile = FALSE, width = 10, height = 9, paper = "special", 
            family = "serif", horizontal = FALSE)
-tmp <- venn.diagram(hu.signatures, width = 10000, height = 9000,
+tmp <- venn.diagram(target.signatures, width = 10000, height = 9000,
                     units = "px", resolution = 1200,
                     filename = NULL,
                     # main = "Feature sets: all data types", main.cex = 2,

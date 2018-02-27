@@ -166,7 +166,7 @@ invisible(lapply(data.symbol.complete, function(x) {
 }))
 
 invisible(lapply(data.symbol.complete, function(x) {
-  write.table(x$Des, file = file.path(sub.dir.RData, paste0(x$dataType, "_Des.tab")),
+  write.table(x$Des, file = file.path(sub.dir.files, paste0(x$dataType, "_Des.tab")),
               quote = FALSE, row.names = FALSE, sep = "\t")
 }))
 

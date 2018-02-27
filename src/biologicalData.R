@@ -7,7 +7,7 @@
 ##### packages: --                                                #####
 ##### author: B. Pucher                                           #####  
 ##### date created: 23/07/2015                                    ##### 
-##### last change:  09/11/2017                                    #####
+##### last change:  10/01/2018                                    #####
 #######################################################################
 rm(list=ls())
 
@@ -258,19 +258,29 @@ met.profiles = cbind(met.tu.profiles, met.no.profiles)
 
 #####------------------------------------------------------------------
 # in RNAseq dataset replace zeroes with NAs
-# remove cases with more than 10% NAs
 #####------------------------------------------------------------------
 cat("In RNASeq dataset: replace zeroes with NA\n")
 ge.profiles.na = ge.profiles
 ge.profiles.na[which(ge.profiles.na == 0)] = NA
 
+#####------------------------------------------------------------------
+# in MET dataset replace zeroes with a very small value to avoid 
+# infinite values after transformation 
+#####------------------------------------------------------------------
+cat("In Methyl dataset: replace zeroes with", .Machine$double.eps, "\n")
+met.profiles.eps = met.profiles
+met.profiles.eps[which(met.profiles.eps == 0)] = .Machine$double.eps
+
+#####------------------------------------------------------------------
+# remove cases with more than 10% NAs
+#####------------------------------------------------------------------
 NAs.th = 10
 cat("Remove features (rows) with more than", NAs.th, "% NAs\n")
 ge.percent.na = apply(ge.profiles.na, 1, function(r) {length(which(is.na(r)))/length(r)*100})
-met.percent.na = apply(met.profiles, 1, function(r) {length(which(is.na(r)))/length(r)*100})
+met.percent.na = apply(met.profiles.eps, 1, function(r) {length(which(is.na(r)))/length(r)*100})
 
 ge.profiles.dupl = ge.profiles.na[which(ge.percent.na < NAs.th),]
-met.profiles.dupl = met.profiles[which(met.percent.na < NAs.th),]
+met.profiles.dupl = met.profiles.eps[which(met.percent.na < NAs.th),]
 
 cat("Dimensions after removing cases with >", NAs.th, "% NAs:", 
     "\n GeneExp: ", dim(ge.profiles.dupl),

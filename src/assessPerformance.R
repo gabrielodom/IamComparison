@@ -7,6 +7,7 @@ assessPerformance = function(gene.set, method, biolog.data, dist.fun,
                              hclust.fun, merge = FALSE, plot = FALSE){
   # subset of data with features selected by method
   data.subset = mapply(function(d, r) {
+    d = as.data.frame(d)
     d[which(rownames(d) %in% r),]
   }, d = biolog.data, r = gene.set, SIMPLIFY = FALSE)
   
@@ -14,6 +15,8 @@ assessPerformance = function(gene.set, method, biolog.data, dist.fun,
   ft.type = cbind(c(rep(names(data.subset), unlist(lapply(data.subset, nrow)))), "merged")
   row.vc = as.character(factor(ft.type[,1], labels = rainbow(length(unique(ft.type[,1])), 
                                                              start = 0.3, end = 0.7)))
+  # convert from data frame back to matrix 
+  data.subset = lapply(data.subset, as.matrix)
   
   if(merge == TRUE){
     data.subset = list(do.call(rbind, data.subset))
