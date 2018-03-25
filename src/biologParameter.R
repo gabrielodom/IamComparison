@@ -113,21 +113,11 @@ serial = ""
 .current.NMF = paste0(.current.biolog, "-", sub(".", "_", sum(.pr), fixed = T), serial)
 
 #####------------------------------------------------------------------
-# parameters for GSiCluster on biological datasets
-#####------------------------------------------------------------------
-.GSiC.lambda = 70
-.GSiC.tlambda = 1
-.GSiC.iter = 100
-  
-.current.GSiC = paste0(.current.biolog, "-", "test")
-
-#####------------------------------------------------------------------
 # parameters for method comparison on biological data
 #####------------------------------------------------------------------
 .sCCA.run = .current.sCCA
 .NMF.run = .current.NMF
 .MALA.run = .current.MALA
-.GSiC.run = .current.GSiC
 
 add = "-Gs960"
 .current.comp = paste0(.current.biolog, "-", 
