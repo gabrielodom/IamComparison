@@ -1,5 +1,5 @@
 #######################################################################
-##### file: biologicalData.R                                      #####
+##### file: 3d_biologicalData.R                                   #####
 ##### input: results/*CurrentRun*/preprocTCGAData-2/RData/        #####
 #####        subsets.RData                                        #####
 ##### output: profiles (*.txt and *.RData) of samples from        #####

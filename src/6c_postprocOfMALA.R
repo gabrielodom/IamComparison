@@ -1,5 +1,5 @@
 #######################################################################
-##### file: postprocOfMALA.R                                      #####
+##### file: 6c_postprocOfMALA.R                                   #####
 ##### input: logic formulas for sample classification .csv        #####
 ##### output: plane list of cancidate genes                       #####
 ##### packages:                                                   #####

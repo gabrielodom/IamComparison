@@ -21,7 +21,7 @@ src.dir = sub(paste0(.Platform$file.sep, "results", .Platform$file.sep, ".*"),
               paste0(.Platform$file.sep, "src", .Platform$filesep), mala.res.dir)
 
 source(file.path(src.dir, "extractMALAFeatures.R"))
-invisible(source(file.path(src.dir, "synthetParameter.R")))
+invisible(source(file.path(src.dir, "8a_synthetParameter.R")))
 
 setwd(mala.tmp.sub)
 

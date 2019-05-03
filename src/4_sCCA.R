@@ -1,5 +1,5 @@
 #######################################################################
-##### file: sCCA.R                                                #####
+##### file: 4_sCCA.R                                              #####
 ##### input: biological or synthetic datasets located in          #####
 #####        ./results/.current.run/biologicalData|syntheticData  #####
 ##### output: vector of penalties and cannonical weights          #####

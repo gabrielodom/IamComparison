@@ -1,5 +1,5 @@
 #######################################################################
-##### file: preprocForNMF.R                                       #####
+##### file: 5a_preprocForNMF.R                                    #####
 ##### input: biological or synthetic datasets located in          #####
 #####        ./results/.current.run/biologicalData|syntheticData  #####
 ##### output: *.csv files adequat for input to NMF                #####

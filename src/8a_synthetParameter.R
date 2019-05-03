@@ -23,7 +23,7 @@
 .m.methylation = 2400
 
 # number of groups (pathways) preassumed in each dataset
-.n.groups = c(20)
+.n.groups = 20
 
 # proportion of pathways to be simulated as perturbed
 .p.groups.d = 0.25
@@ -48,7 +48,8 @@
 .effect.size = c(0.2, 0.4, 0.8)
 
 # number of datasets to create with each set of parameters (for performance statistics)
-.stats.runs = 100
+.stats.runs = 10
+# .stats.runs = 10 # test the process first; the process works!
 
 # create random seed for each run
 set.seed(123456789)
@@ -102,28 +103,37 @@ name = paste("exact", .serial, sep = "-")
 # parameters for MALA on synthetic datasets
 #####------------------------------------------------------------------
 
-# number of cpus that can be dedicated to MALA
-.mala.cpus = 12
+useMALA <- .useMALA_logi
+if(useMALA){
+  # number of cpus that can be dedicated to MALA
+  .mala.cpus = 12
+  
+  # increase e.g. when setting remain the same but synthetic data has changed
+  .serial = "ES"
+  
+  # parameters handed over to MALA
+  # for documentation see the file bin\MALA\MALA-COMMAND-LINE-README.txt
+  .sampling.type = 1
+  .subsets = 1
+  .set.covering.type = 2
+  .beta = 50
+  .graspsecs = 960 # default: 120, max: 960
+  .graspiter = 100 # default: 100, max: 100000
+  .numform = 3
+  .exclusive.fs = 0
+  
+  # name of current MALA result folder
+  .current.MALA = paste0(
+    "ST", .sampling.type, "_SC", 
+    .set.covering.type, "_B", .beta, "_Gs", 
+    .graspsecs, "_Gi", .graspiter, "_NF", .numform,
+    "_EF", .exclusive.fs, "-", .serial
+  ) 
+} else {
+  .current.MALA <- NULL
+}
 
-# increase e.g. when setting remain the same but synthetic data has changed
-.serial = "ES"
 
-# parameters handed over to MALA
-# for documentation see the file bin\MALA\MALA-COMMAND-LINE-README.txt
-.sampling.type = 1
-.subsets = 1
-.set.covering.type = 2
-.beta = 50
-.graspsecs = 960 # default: 120, max: 960
-.graspiter = 100 # default: 100, max: 100000
-.numform = 3
-.exclusive.fs = 0
-
-# name of current MALA result folder
-.current.MALA = paste0("ST", .sampling.type, "_SC", 
-                       .set.covering.type, "_B", .beta, "_Gs", 
-                       .graspsecs, "_Gi", .graspiter, "_NF", .numform,
-                       "_EF", .exclusive.fs, "-", .serial) 
 
 #####------------------------------------------------------------------
 # parameters for method comparison on synthetic data
@@ -147,4 +157,4 @@ ws = ls(all.names = TRUE)
 hidden.vars = ws[grep("^\\.", ws)]
 print(hidden.vars)
 
-
+ls.str(all.names = TRUE)

@@ -1,5 +1,5 @@
 #######################################################################
-##### file: preprocTCGAData.R                                     #####
+##### file: 3c_preprocTCGAData.R                                  #####
 ##### input: TCGA data .dataset.list stored at data/raw/          #####
 ##### output: results/*CurrentRun*/*SubDir*/RData/subsets.RData   #####
 ##### packages: --                                                #####

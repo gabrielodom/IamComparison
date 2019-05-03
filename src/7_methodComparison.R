@@ -1,5 +1,5 @@
 #######################################################################
-##### file: methodComparison.R                                    #####
+##### file: 7_methodComparison.R                                  #####
 ##### input: flat gene lists resulting from methods to compare    #####
 ##### output: Venn diagrams, tables, p-values of overlaps and/or  #####
 ##### individual results of GO and pathway analysis.              #####

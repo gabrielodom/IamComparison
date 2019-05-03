@@ -1,6 +1,6 @@
 #######################################################################
-##### file: syntheticData.R                                       #####
-##### input: parameters defined in synthetParameter.R             #####
+##### file: 8b_syntheticDataES.R                                  #####
+##### input: parameters defined in 8a_synthetParameter.R          #####
 ##### output: synthetic datasets (as *.txt and *.RData) with      #####
 #####   abberation level based on relative detectable effect      #####
 ##### packages:                                                   #####
@@ -9,6 +9,7 @@
 ##### last change: 09/11/2017                                     #####
 #######################################################################
 rm(list=ls())
+ls.str(all.names = TRUE)
 
 #install.packages("gplots")
 library("gplots")
@@ -165,7 +166,7 @@ for(run in 1:runs){
   sub.dir.files = sub.dir.files.tmp
   sub.dir.RData = sub.dir.RData.tmp
   
-  # set sub.dir.paths to run dir   
+  # set sub.dir.paths to run dir
   sub.dir.figures = file.path(sub.dir.figures, paste0("run", run))
   sub.dir.files = file.path(sub.dir.files, paste0("run", run))
   sub.dir.RData = file.path(sub.dir.RData, paste0("run", run))  
@@ -325,10 +326,10 @@ for(run in 1:runs){
   sub.dir.files = sub.dir.files.tmp
   sub.dir.RData = sub.dir.RData.tmp
   
-  # set sub.dir.paths to run dir   
+  # set sub.dir.paths to run dir
   sub.dir.figures = file.path(sub.dir.figures, paste0("run", run))
-  sub.dir.files = file.path(sub.dir.files, paste0("run", run))
-  sub.dir.RData = file.path(sub.dir.RData, paste0("run", run))  
+  sub.dir.files   = file.path(sub.dir.files, paste0("run", run))
+  sub.dir.RData   = file.path(sub.dir.RData, paste0("run", run))  
   
   # create new directory for run
   dir.create(sub.dir.figures, showWarnings = FALSE)
@@ -498,7 +499,7 @@ for(run in 1:runs){
   sub.dir.files = sub.dir.files.tmp
   sub.dir.RData = sub.dir.RData.tmp
   
-  # set sub.dir.paths to run dir   
+  # set sub.dir.paths to run dir
   sub.dir.figures = file.path(sub.dir.figures, paste0("run", run))
   sub.dir.files = file.path(sub.dir.files, paste0("run", run))
   sub.dir.RData = file.path(sub.dir.RData, paste0("run", run))  

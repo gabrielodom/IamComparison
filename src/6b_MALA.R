@@ -1,5 +1,5 @@
 #######################################################################
-##### file: MALA.R                                                #####
+##### file: 6b_MALA.R                                             #####
 ##### input: synthetic datasets created in a number of runs       #####
 ##### output: logic formulas for sample classification .csv       #####
 ##### packages: --                                                #####

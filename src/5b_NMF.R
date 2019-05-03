@@ -1,5 +1,5 @@
 #######################################################################
-##### file: NMF.R                                                 #####
+##### file: 5b_NMF.R                                              #####
 ##### input: *.csv files adequat for input to NMF from preproc.   #####
 ##### output: best factor matrices W and H to rectonstuct data    #####
 ##### packages: --                                                #####

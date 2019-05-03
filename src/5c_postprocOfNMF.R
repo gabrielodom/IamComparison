@@ -1,5 +1,5 @@
 #######################################################################
-##### file: postprocOfNMF.R                                       #####
+##### file: 5c_postprocOfNMF.R                                    #####
 ##### input: output of NMF: best factor matrices W and H          #####
 ##### output: flat list of candidate genes                        #####
 ##### packages: --                                                #####
