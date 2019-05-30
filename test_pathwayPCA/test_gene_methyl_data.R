@@ -1,5 +1,6 @@
 library(tidyverse)
 # devtools::install_github("gabrielodom/pathwayPCA", ref = "stable_3_5")
+# BiocManager::install("pathwayPCA")
 library(pathwayPCA)
 
 

@@ -51,3 +51,9 @@ pathSignif(
   omicsOut1 = gene_aespcOut,
   omicsOut2 = methyl_aespcOut
 )
+pathSignif(
+  pathway = "path1",
+  resp = getResponse(gene_Omics),
+  omicsOut1 = gene_aespcOut,
+  omicsOut2 = methyl_aespcOut
+)
