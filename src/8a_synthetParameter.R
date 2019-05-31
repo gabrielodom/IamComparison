@@ -48,7 +48,7 @@
 .effect.size = c(0.2, 0.4, 0.8)
 
 # number of datasets to create with each set of parameters (for performance statistics)
-.stats.runs = 10
+.stats.runs = 100
 # .stats.runs = 10 # test the process first; the process works!
 
 # create random seed for each run

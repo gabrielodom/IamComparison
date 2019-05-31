@@ -128,6 +128,7 @@ system.time(
 #   results.
 # 24.03667, 25.44217 min for 10 reps
 # The gene expression data is 100 x 1600; the methlyation data is 100 x 2400
+# 53.41383 min for 100 minutes
 
 # do sCCA
 system.time(
