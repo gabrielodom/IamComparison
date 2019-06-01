@@ -32,7 +32,14 @@ library(pathwayPCA)
 # whichDesign <- "20gr_100p_80"
 # 20 groups; 100 percent of features DE in perturbed pathways; 80% effect size
 
-whichDesign <- "20gr_100p_40"
+# whichDesign <- "20gr_100p_40"
+# whichDesign <- "20gr_100p_20"
+# whichDesign <- "20gr_50p_80"
+# whichDesign <- "20gr_50p_40"
+# whichDesign <- "20gr_50p_20"
+# whichDesign <- "20gr_10p_80"
+# whichDesign <- "20gr_10p_40"
+# whichDesign <- "20gr_10p_20"
 whereDir <- 
   "results/GeneExp_Met_2DS/syntheticData/gr_20_perc_10_100_es_20_80/RData/"
 runDirs_char <- paste0(list.files(whereDir), "/")
@@ -445,7 +452,8 @@ saveRDS(simResults_ls, file = paste0(out_path, outFile_char, ".RDS"))
 Sys.time() - a
 
 # For iterating over 100 simulation runs (in hours):
-# 1.402108, 
+# 1.402108, 1.398272, 1.411486, 1.401245, 1.399975, 1.412866, 1.404951, 1.41051,
+#   1.411761
 
 
 # For iterating over 9 design points:
