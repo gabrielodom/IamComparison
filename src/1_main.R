@@ -130,6 +130,8 @@ system.time(
 # The gene expression data is 100 x 1600; the methlyation data is 100 x 2400
 # 53.41383 min for 100 minutes
 
+# For 4 x 3 design, this takes 67.2555 min for 100 reps
+
 # do sCCA
 system.time(
   source(file.path(.src.dir, "4_sCCA.R"))

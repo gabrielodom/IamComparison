@@ -15,22 +15,6 @@ library(tidyverse)
 library(pathwayPCA)
 
 
-###  By Design  ###
-designs_char <- c(
-  "20gr_100p_80", "20gr_100p_40", "20gr_100p_20",
-  "20gr_50p_80", "20gr_50p_40", "20gr_50p_20",
-  "20gr_20p_80", "20gr_20p_40", "20gr_20p_20",
-  "20gr_10p_80", "20gr_10p_40", "20gr_10p_20"
-)
-desg <- 1
-designs_char[desg]
-# 20 groups; 100 percent of features DE in perturbed pathways; 80% effect size
-
-whereDir <- 
-  "results/GeneExp_Met_2DS/syntheticData/gr_20_perc_10_100_es_20_80_bkgrnd_0/RData/"
-runDirs_char <- paste0(list.files(whereDir), "/")
-
-
 
 ######  Global Functions  #####################################################
 makeGroupIdx <- function(grp_idx, grpCard_int){
@@ -151,19 +135,9 @@ n.groups <- 20
 geneGrpCard_int <- ceiling(p.gene.exp / n.groups)
 methylGrpCard_int <- ceiling(p.methylation / n.groups)
 
-localParams_num <- 
-  str_split(designs_char[desg], "_") %>% 
-  unlist() %>% 
-  str_extract("[0-9]*") %>% 
-  as.numeric()
-names(localParams_num) <- c("numGroups", "pctDE", "pctEffectSize")
-
-
-###  Filenames  ###
-geneDE_path <- paste0("GeneExp_synth_", designs_char[desg], "_Diff.RData")
-geneData_path <- paste0("GeneExp_synth_", designs_char[desg], ".RData")
-diffMethyl_path <- paste0("Methyl_synth_", designs_char[desg], "_Diff.RData")
-methylData_path <- paste0("Methyl_synth_", designs_char[desg], ".RData")
+whereDir <- 
+  "results/GeneExp_Met_2DS/syntheticData/gr_20_perc_10_100_es_20_80_bkgrnd_0/RData/"
+runDirs_char <- paste0(list.files(whereDir), "/")
 
 
 ###  Gene Expression Pathways  ###
@@ -202,10 +176,40 @@ rm(methylPaths_ls)
 
 
 
-######  Loop  #################################################################
+######  Design Parameters and Loop  ###########################################
+designs_char <- c(
+  "20gr_100p_80", "20gr_100p_40", "20gr_100p_20",
+  "20gr_50p_80", "20gr_50p_40", "20gr_50p_20",
+  "20gr_20p_80", "20gr_20p_40", "20gr_20p_20",
+  "20gr_10p_80", "20gr_10p_40", "20gr_10p_20"
+)
+# desg <- 1
+# designs_char[desg]
+# # 20 groups; 100 percent of features DE in perturbed pathways; 80% effect size
+
+a <- Sys.time()
+
+for(desg in designs_char){
+
+localParams_num <- 
+  str_split(designs_char[desg], "_") %>% 
+  unlist() %>% 
+  str_extract("[0-9]*") %>% 
+  as.numeric()
+names(localParams_num) <- c("numGroups", "pctDE", "pctEffectSize")
+
+
+###  Filenames  ###
+geneDE_path <- paste0("GeneExp_synth_", designs_char[desg], "_Diff.RData")
+geneData_path <- paste0("GeneExp_synth_", designs_char[desg], ".RData")
+diffMethyl_path <- paste0("Methyl_synth_", designs_char[desg], "_Diff.RData")
+methylData_path <- paste0("Methyl_synth_", designs_char[desg], ".RData")
+
+
+
+######  Runs Loop  ############################################################
 
 # runDir <- runDirs_char[1]
-a <- Sys.time()
 
 for(runDir in runDirs_char){
   
@@ -431,8 +435,12 @@ for(runDir in runDirs_char){
   
   saveRDS(simResults_ls, file = paste0(out_path, outFile_char, ".RDS"))
   
-  # END for()
+  # END for() Runs
   
+}
+
+# END for designs
+
 }
 
 Sys.time() - a
