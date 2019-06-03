@@ -34,11 +34,12 @@
 #          one with 2 percent of features DE in perturbed pathways 
 #          and another with 10 percent of features DE in perturbed pathways 
 #          between conditions
-.percentage.pw = c(10, 50, 100)
+.percentage.pw = c(10, 20, 50, 100)
 
 # proportion of features additionally simulated as different between conditions
 # and randomly spread on a dataset
-.p.random = 0.01
+# .p.random = 0.01
+.p.random = 0
 
 # Relative effect (peak) to add/subtract to the samples of one condition to simulate 
 # DE features in a data type to induce weak, moderate or strong DE signals. 
@@ -59,7 +60,13 @@ set.seed(123456789)
 gr = paste0(unique(c(min(.n.groups), max(.n.groups))), collapse = "_")
 perc = paste0(unique(c(min(.percentage.pw), max(.percentage.pw))), collapse = "_")
 es = paste0(unique(c(min(.effect.size), max(.effect.size))*100), collapse = "_")
-.current.synthet = paste("gr", gr, "perc", perc, "es", es, sep = "_")
+.current.synthet = paste(
+  "gr", gr,
+  "perc", perc,
+  "es", es,
+  "bkgrnd", .p.random,
+  sep = "_"
+)
 
 # specify data types to integrate
 .data.to.integrate = c("GeneExp", "Methylation")
