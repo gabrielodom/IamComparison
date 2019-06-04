@@ -189,7 +189,7 @@ designs_char <- c(
 
 a <- Sys.time()
 
-for(desg in designs_char){
+for(desg in seq_along(designs_char)){
 
 localParams_num <- 
   str_split(designs_char[desg], "_") %>% 
@@ -435,6 +435,10 @@ for(runDir in runDirs_char){
   
   saveRDS(simResults_ls, file = paste0(out_path, outFile_char, ".RDS"))
   
+  
+  
+  closeAllConnections()
+  
   # END for() Runs
   
 }
@@ -445,11 +449,5 @@ for(runDir in runDirs_char){
 
 Sys.time() - a
 
-# For iterating over 100 simulation runs (in hours):
-# 1.402108, 1.398272, 1.411486, 1.401245, 1.399975, 1.412866, 1.404951, 1.41051,
-#   1.411761
-
-
-# For iterating over 9 design points:
-# ???, 7.646102, 7.734493, 7.804814, 7.648272, 7.674367, 7.408685, 7.87128,
-#   7.945855
+# For 12 design points iterating over 100 simulation runs:
+# 16.61194 hours
