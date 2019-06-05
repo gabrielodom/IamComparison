@@ -93,6 +93,7 @@ decisionTable <- function(PathpVals_df, truePaths,
 }
 
 pathSignif <- function(pathway, resp, omicsOut1, omicsOut2){
+  # browser()
   
   path_df <- data.frame(
     Resp = resp,
@@ -103,13 +104,18 @@ pathSignif <- function(pathway, resp, omicsOut1, omicsOut2){
   
   # Individual p-values
   ome1_mod <- glm(Resp ~ ome1, family = binomial, data = path_df)
-  ome2_mod <- glm(Resp ~ ome2, family = binomial, data = path_df)
-  
-  pVals_df <- data.frame(
-    ome1 = coef(summary(ome1_mod))[-1, 4],
-    ome2 = coef(summary(ome2_mod))[-1, 4]
+  ome1p <- ifelse(
+    test = ome1_mod$converged,
+    yes = coef(summary(ome1_mod))[-1, 4],
+    no = NA
   )
-  rownames(pVals_df) = "pValue"
+  
+  ome2_mod <- glm(Resp ~ ome2, family = binomial, data = path_df)
+  ome2p <- ifelse(
+    test = ome2_mod$converged,
+    yes = coef(summary(ome2_mod))[-1, 4],
+    no = NA
+  )
   
   
   # global p-value
@@ -119,10 +125,15 @@ pathSignif <- function(pathway, resp, omicsOut1, omicsOut2){
   
   path_aov <- anova(null_mod, path_mod)
   LRpVal <- pchisq(path_aov[2, 4], df = path_aov[2, 3], lower.tail = FALSE)
-  pVals_df$global <- LRpVal
   
   
   # Return
+  pVals_df <- data.frame(
+    ome1 = ome1p,
+    ome2 = ome2p,
+    global = LRpVal
+  )
+  rownames(pVals_df) = "pValue"
   pVals_df
   
 }
