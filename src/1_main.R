@@ -136,7 +136,7 @@ system.time(
 system.time(
   source(file.path(.src.dir, "4_sCCA.R"))
 )
-# 17.8418 hrs for 10 repititions.
+# 17.8418 hrs for 10 repititions (9 design points).
 
 # do NMF on synthetic data
 system.time(

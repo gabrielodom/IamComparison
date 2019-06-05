@@ -105,7 +105,7 @@ source(file.path(.src.dir, "setSubDirPath.R"))
 source(file.path(.src.dir, "drawROC.R"))
 source(file.path(.src.dir, "assessPerformance.R"))
 
-log.con = file(file.path(sub.dir.files, "sCCALog.txt"))
+log.con = file(file.path(sub.dir.files, paste0("sCCALog_", Sys.Date(), ".txt")))
 sink(file = log.con, type = "output")
 flush(log.con)
 
@@ -127,7 +127,10 @@ if(.type == "synthet"){
   sub.dir.files.tmp = sub.dir.files
   sub.dir.figures.tmp = sub.dir.figures
   sub.dir.RData.tmp = sub.dir.RData
-    
+  
+  # run <- 1
+  # Each run over 12 design points takes 2.6 hours. We will set up a run that
+  #   will finish the morning of the day after tomorrow (39 hours later)
   for(run in 1:runs){
     
     cat("Current stats run:", run, "\n")
@@ -146,8 +149,13 @@ if(.type == "synthet"){
     source(file.path(.src.dir, "helpParameter.R")) 
     
     # create array with penalties to test
-    penalties = createPenalties(n.penalties = 250, m.features = c(.m.gene.exp, .m.methylation),
-                                factor.min = 0.1, factor.max = 0.6)
+    
+    penalties <- createPenalties(
+      n.penalties = 250,
+      m.features = c(.m.gene.exp, .m.methylation),
+      factor.min = 0.1,
+      factor.max = 0.6
+    )
     
     sCCA_result = list()  
     num_nz_weights = matrix(NA, nrow = nrow(penalties), ncol = ncol(penalties))
@@ -156,6 +164,7 @@ if(.type == "synthet"){
     cat("Seed used:", run.seed, "\n")
     set.seed(run.seed)
     
+    # k <- i <- j <- 1
     for(k in 1:length(n_groups)){
       for(i in 1:length(p_de)){
         for(j in 1:length(c_de)){
@@ -179,6 +188,7 @@ if(.type == "synthet"){
               "between groups.\n\n")
           
           # calculate sparse CCA for penalty pairs and evaluate them
+          
           for(y in 1:ncol(penalties)){
             out = MultiCCA(data, penalty = penalties[,y], 
                            ncomponents = 1, niter = 25, 
@@ -186,6 +196,8 @@ if(.type == "synthet"){
             
             num_nz_weights[,y] = unlist(lapply(out$ws, function(x) length(x[which(x != 0)])))
           }
+          # 3.682333 min over 250 penalties
+          
           cat("Save number of non-zero elements in canonical weight vectors.\n")
           saveRDS(num_nz_weights, file = file.path(sub.dir.RData, paste0("num_nz_weights", fname, ".RData")))
           
@@ -205,14 +217,25 @@ if(.type == "synthet"){
           min_idx = apply(dist, MARGIN = 1, which.min)
           bestpenalties = mapply(function(x, y) penalties[x,y], x = c(1:nrow(penalties)), y = min_idx)
           
-          current_res = runAndSavesCCA(data, penalties = bestpenalties, fnames = data.names, 
-                                       save.RData = FALSE)
+          current_res <- runAndSavesCCA(
+            data,
+            penalties = bestpenalties,
+            fnames = data.names, 
+            save.RData = FALSE
+          )
+          # 0.81 seconds
           
           sCCA_result = c(sCCA_result, current_res)
           
           # calculate statistics for penalty terms
-          perm.out = MultiCCA.permute(data, penalties = as.matrix(bestpenalties, nrow = 2),
-                                      type = "standard", nperms = 1000, trace = FALSE)
+          perm.out <- MultiCCA.permute(
+            data,
+            penalties = as.matrix(bestpenalties, nrow = 2),
+            type = "standard",
+            nperms = 1000,
+            trace = FALSE
+          )
+          # 8.689833 min for 1000 permutations
           
           print(perm.out); cat("\n")
           
