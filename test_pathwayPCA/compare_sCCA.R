@@ -43,18 +43,6 @@
 library(tidyverse)
 library(pathwayPCA)
 
-# The data files all reside in
-dataDir <- "results/GeneExp_Met_2DS/"
-
-# sCCA Results are in
-resDir <- paste0(dataDir, "synthetsCCA/supervised_exact-ES/files/")
-runDir <- "run1/"
-
-# Simulated data are in
-simDir <- paste0(
-  dataDir, "syntheticData/gr_20_perc_10_100_es_20_80_bkgrnd_0/RData/"
-)
-
 
 # The global parameters are
 p.gene.exp <- 1600
@@ -82,6 +70,7 @@ names(localParams_num) <- c("numGroups", "pctDE", "pctEffectSize")
 
 # Helper functions are
 source("test_pathwayPCA/global_functions.R")
+
 
 
 ######  Pathway Collections  ##################################################
@@ -126,7 +115,25 @@ methyl_PC <- CreatePathwayCollection(
 
 rm(methylPaths_ls)
 
+
+######  Directories  ##########################################################
+# The data files all reside in
+dataDir <- "results/GeneExp_Met_2DS/"
+
+# Simulated data are in
+simDir <- paste0(
+  dataDir, "syntheticData/gr_20_perc_10_100_es_20_80_bkgrnd_0/RData/"
+)
+
+# sCCA Results are in
+resDir <- paste0(dataDir, "synthetsCCA/supervised_exact-ES/files/")
+runs <- paste0("run", 1:15, "/")
+
+# a <- Sys.time()
+res100_80_ls <- lapply(runs, function(runDir){
+
 #
+
 
 
 ######  Inspect Current Comparison Results  ###################################
@@ -253,26 +260,51 @@ signifPathsG_int <- which(
 )
 
 
-###  Differentially-methylated sites  ###
-methylDE_path <- paste0("Methyl_synth_", designs_char[desg], "_Diff.RData")
-diffMethyl_char <- readRDS(paste0(simDir, runDir, methylDE_path))
+# ###  Differentially-methylated sites  ###
+# methylDE_path <- paste0("Methyl_synth_", designs_char[desg], "_Diff.RData")
+# diffMethyl_char <- readRDS(paste0(simDir, runDir, methylDE_path))
+# 
+# diffMethyl_idx <- 
+#   diffMethyl_char %>% 
+#   str_replace("met_", "") %>% 
+#   as.integer() %>% 
+#   sort
+# 
+# methyl_logi <- seq_len(p.methylation) %in% diffMethyl_idx
+# 
+# # Which pathways were expressed?
+# signifPathsM_int <- which(
+#   sapply(
+#     seq_len(n.groups),
+#     isGroupDE,
+#     grpCard_int = methylGrpCard_int,
+#     DE_logi = methyl_logi,
+#     pctDE = localParams_num[2] / 100
+#   )
+# )
 
-diffMethyl_idx <- 
-  diffMethyl_char %>% 
-  str_replace("met_", "") %>% 
-  as.integer() %>% 
-  sort
 
-methyl_logi <- seq_len(p.methylation) %in% diffMethyl_idx
 
-# Which pathways were expressed?
-signifPathsM_int <- which(
-  sapply(
-    seq_len(n.groups),
-    isGroupDE,
-    grpCard_int = methylGrpCard_int,
-    DE_logi = methyl_logi,
-    pctDE = localParams_num[2] / 100
-  )
+######  Return  ###############################################################
+data.frame(
+  pVals = sCCA_pVals,
+  dePath = seq_along(sCCA_pVals) %in% signifPathsG_int
 )
 
+})
+# b <- Sys.time()
+# b - a # 0.7188621 sec for 15 reps
+
+names(res100_80_ls) <- paste0("run", 1:15)
+res100_80_df <- bind_rows(res100_80_ls, .id = "run")
+saveRDS(res100_80_df, file = "results/sim_sCCA_20190610/res_100_80.RDS")
+
+res100_80_df %>% 
+  mutate(claimDE = pVals < 0.05) %>% 
+  mutate(T1err = claimDE & !dePath) %>% 
+  mutate(T2err = (!claimDE) & dePath) %>% 
+  group_by(run) %>% 
+  summarise(
+    pctT1 = mean(T1err),
+    pctT2 = mean(T2err)
+  )
