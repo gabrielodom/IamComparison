@@ -43,6 +43,16 @@
 library(tidyverse)
 library(pathwayPCA)
 
+# The data files all reside in
+dataDir <- "results/GeneExp_Met_2DS/"
+
+# Simulated data are in
+simDir <- paste0(
+  dataDir, "syntheticData/gr_20_perc_10_100_es_20_80_bkgrnd_0/RData/"
+)
+
+# Helper functions are
+source("test_pathwayPCA/global_functions.R")
 
 # The global parameters are
 p.gene.exp <- 1600
@@ -59,17 +69,16 @@ designs_char <- c(
   "20gr_20p_80", "20gr_20p_40", "20gr_20p_20",
   "20gr_10p_80", "20gr_10p_40", "20gr_10p_20"
 )
-desg <- 1
+# desg <- 1
+
+results_ls <- lapply(designs_char, function(desg){
 
 localParams_num <- 
-  str_split(designs_char[desg], "_") %>% 
+  str_split(desg, "_") %>% 
   unlist() %>% 
   str_extract("[0-9]*") %>% 
   as.numeric()
 names(localParams_num) <- c("numGroups", "pctDE", "pctEffectSize")
-
-# Helper functions are
-source("test_pathwayPCA/global_functions.R")
 
 
 
@@ -116,21 +125,14 @@ methyl_PC <- CreatePathwayCollection(
 rm(methylPaths_ls)
 
 
-######  Directories  ##########################################################
-# The data files all reside in
-dataDir <- "results/GeneExp_Met_2DS/"
-
-# Simulated data are in
-simDir <- paste0(
-  dataDir, "syntheticData/gr_20_perc_10_100_es_20_80_bkgrnd_0/RData/"
-)
+######  Apply over Runs  ######################################################
 
 # sCCA Results are in
 resDir <- paste0(dataDir, "synthetsCCA/supervised_exact-ES/files/")
 runs <- paste0("run", 1:15, "/")
 
 # a <- Sys.time()
-res100_80_ls <- lapply(runs, function(runDir){
+out_ls <- lapply(runs, function(runDir){
 
 #
 
@@ -159,14 +161,14 @@ res100_80_ls <- lapply(runs, function(runDir){
 # We need to know which features sCCA claims are DE.
 
 # sCCA Genes
-geneRes_path <- paste0("sCCA_GeneExp_synth_", designs_char[desg], ".txt")
+geneRes_path <- paste0("sCCA_GeneExp_synth_", desg, ".txt")
 sCCAgenes_char <- scan(
   paste0(resDir, runDir, geneRes_path),
   what = character()
 )
 
 # sCCA Methylated Sites
-methylRes_path <- paste0("sCCA_Methyl_synth_", designs_char[desg], ".txt")
+methylRes_path <- paste0("sCCA_Methyl_synth_", desg, ".txt")
 sCCAmethyl_char <- scan(
   paste0(resDir, runDir, methylRes_path),
   what = character()
@@ -237,7 +239,7 @@ sCCA_pVals <- sapply(
 # Now we need to know which features are truly DE
 
 ###  Differentially-expressed genes  ###
-geneDE_path <- paste0("GeneExp_synth_", designs_char[desg], "_Diff.RData")
+geneDE_path <- paste0("GeneExp_synth_", desg, "_Diff.RData")
 diffGenes_char <- readRDS(paste0(simDir, runDir, geneDE_path))
 
 diffGenes_idx <- 
@@ -261,7 +263,7 @@ signifPathsG_int <- which(
 
 
 # ###  Differentially-methylated sites  ###
-# methylDE_path <- paste0("Methyl_synth_", designs_char[desg], "_Diff.RData")
+# methylDE_path <- paste0("Methyl_synth_", desg, "_Diff.RData")
 # diffMethyl_char <- readRDS(paste0(simDir, runDir, methylDE_path))
 # 
 # diffMethyl_idx <- 
@@ -291,20 +293,41 @@ data.frame(
   dePath = seq_along(sCCA_pVals) %in% signifPathsG_int
 )
 
+# END for() runs
 })
 # b <- Sys.time()
 # b - a # 0.7188621 sec for 15 reps
 
-names(res100_80_ls) <- paste0("run", 1:15)
-res100_80_df <- bind_rows(res100_80_ls, .id = "run")
-saveRDS(res100_80_df, file = "results/sim_sCCA_20190610/res_100_80.RDS")
+names(out_ls) <- paste0("run", 1:15)
+out_df <- bind_rows(out_ls, .id = "run")
+# saveRDS(out_df, file = "results/sim_sCCA_20190610/res_100_80.RDS")
 
-res100_80_df %>% 
-  mutate(claimDE = pVals < 0.05) %>% 
-  mutate(T1err = claimDE & !dePath) %>% 
-  mutate(T2err = (!claimDE) & dePath) %>% 
-  group_by(run) %>% 
-  summarise(
-    pctT1 = mean(T1err),
-    pctT2 = mean(T2err)
-  )
+out_df
+
+# END for() designs
+})
+
+names(results_ls) <- designs_char
+results_df <- bind_rows(results_ls, .id = "design")
+resultsClean_df <- 
+  results_df %>% 
+  separate(design, into = c("nGroups", "pctDE", "effSize")) %>% 
+  mutate(nGroups = str_replace(nGroups, "gr", "")) %>% 
+  mutate(pctDE = str_replace(pctDE, "p", "")) %>% 
+  mutate(run = str_replace(run, "run", ""))
+
+write_csv(
+  resultsClean_df,
+  path = "results/sim_sCCA_20190610/all_designs_15runs.csv"
+)
+
+
+# res100_80_df %>% 
+#   mutate(claimDE = pVals < 0.05) %>% 
+#   mutate(T1err = claimDE & !dePath) %>% 
+#   mutate(T2err = (!claimDE) & dePath) %>% 
+#   group_by(run) %>% 
+#   summarise(
+#     pctT1 = mean(T1err),
+#     pctT2 = mean(T2err)
+#   )
