@@ -1,4 +1,4 @@
-# Simulation Run
+# Simulation Run: pathwayPCA
 # Gabriel Odom
 # 2019-05-29
 
