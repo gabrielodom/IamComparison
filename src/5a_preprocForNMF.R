@@ -124,7 +124,9 @@ input.data.dir = switch(.type,
 sub.dir.name = file.path(paste0(.type, "NMF"), current.run)
 source(file.path(.src.dir, "setSubDirPath.R"))
 
-log.con = file(file.path(sub.dir.files, "preprocForNMFLog.txt"))
+log.con = file(
+  file.path(sub.dir.files, paste0("preprocForNMFLog_", Sys.Date(), ".txt"))
+)
 sink(file = log.con, type = "output")
 flush(log.con)
 
@@ -145,6 +147,7 @@ if(.type == "synthet"){
   sub.dir.figures.tmp = sub.dir.figures
   sub.dir.RData.tmp = sub.dir.RData
   
+  # run <- 1
   for(run in 1:runs){
     
     cat("Current stats run:", run, "\n")
@@ -162,6 +165,7 @@ if(.type == "synthet"){
     # get n_groups, p_de, p_dm, c_de, c_dm from datasets names
     source(file.path(.src.dir, "helpParameter.R")) 
     
+    # k <- i <- j <- 1
     for(k in 1:length(n_groups)){
       for(i in 1:length(p_de)){
         for(j in 1:length(c_de)){

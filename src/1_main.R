@@ -143,17 +143,17 @@ system.time(
 system.time(
   source(file.path(.src.dir, "5a_preprocForNMF.R"))
 )
-# 7.067167 min
+# 7.067167 min (9 design points).
 
 system.time(
   source(file.path(.src.dir, "5b_NMF.R"))
 )
-# 15.59804 hrs for 10 repititions.
+# 15.59804 hrs for 10 repititions (9 design points).
 
 system.time(
   source(file.path(.src.dir, "5c_postprocOfNMF.R"))
 )
-# 3.747 min
+# 3.747 min (9 design points).
 
 
 useMALA <- .useMALA_logi

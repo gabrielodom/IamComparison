@@ -30,7 +30,7 @@ source(file.path(.src.dir, "multiNMF_mm.R"))
 source(file.path(.src.dir, "multiNMF_residue.R"))
 source(file.path(.src.dir, "multiNMF_residue_comodule.R"))
 
-log.con = file(file.path(sub.dir.files, "NMFLog.txt"))
+log.con = file(file.path(sub.dir.files, paste0("NMFLog_", Sys.Date(), ".txt")))
 sink(file = log.con, type = "output")
 flush(log.con)
 
@@ -50,6 +50,7 @@ if(.type == "synthet"){
   sub.dir.figures.tmp = sub.dir.figures
   sub.dir.RData.tmp = sub.dir.RData
   
+  # run <- 1
   for(run in 1:runs){
     
     cat("Current stats run:", run, "\n")
@@ -68,16 +69,28 @@ if(.type == "synthet"){
     cat("Seed used:", run.seed, "\n")
     set.seed(run.seed)
     
+    # i <- 1
     for(i in 1:length(datasets_nn)){
       load(file.path(sub.dir.RData, datasets_nn[i]))
       
       cat("Datasets: ", paste(names(data), collapse = "\t"), "\n")
       cat("calcualte NMF with K = ", K, " nloop = ", nloop, " and maxiter = ", maxiter, "\n")
       cat(paste("---------------", Sys.time(), "---------------"), "\n")
-      bestWHlist_temp = multiNMF_residue_comodule(data, K, nloop, maxiter)
+      
+      bestWHlist_temp <- multiNMF_residue_comodule(data, K, nloop, maxiter)
+      # 12.21283 min for 20 loops and 1000 iterations
+      
       bestWHlist = c(bestWHlist_temp, datasets = list(names(data)))
-      save(bestWHlist,
-           file = file.path(sub.dir.RData, paste0("bestWHlist", unlist(strsplit(datasets_nn[i], split = "data_nn"))[2])))
+      save(
+        bestWHlist,
+        file = file.path(
+          sub.dir.RData,
+          paste0(
+            "bestWHlist",
+            unlist(strsplit(datasets_nn[i], split = "data_nn"))[2]
+          )
+        )
+      )
       cat(paste("---------------", Sys.time(), "---------------"), "\n")
     
     }

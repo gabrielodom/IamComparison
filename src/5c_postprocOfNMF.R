@@ -132,7 +132,9 @@ source(file.path(.src.dir, "setSubDirPath.R"))
 source(file.path(.src.dir, "drawROC.R"))
 source(file.path(.src.dir, "assessPerformance.R"))
 
-log.con = file(file.path(sub.dir.files, paste0("postprocOfNMFLog.txt")))
+log.con = file(
+  file.path(sub.dir.files, paste0("postprocOfNMFLog_", Sys.Date(), ".txt"))
+)
 sink(file = log.con, type = "output")
 flush(log.con)
 
@@ -154,6 +156,7 @@ if(.type == "synthet"){
   sub.dir.figures.tmp = sub.dir.figures
   sub.dir.RData.tmp = sub.dir.RData
   
+  # run <- 1
   for(run in 1:runs){
     
     cat("Current stats run:", run, "\n")
@@ -165,19 +168,22 @@ if(.type == "synthet"){
     results = list.files(sub.dir.RData, pattern)
     NMF_result = list()
     
+    # i <- 1
     for(i in 1:length(results)){
       # load bestWHlist 
       load(file.path(sub.dir.RData, results[i]))
       cat("Current data set: ", paste(bestWHlist$datasets, collapse = "\t"), "\n")
       
       # get desired number of features to be identified
-      desired = getDesiredSynthet(bestWHlist, input.data.dir, 
-                                  stats.run = paste0("run", run))
+      desired <- getDesiredSynthet(
+        bestWHlist, input.data.dir, stats.run = paste0("run", run)
+      )
       cat("Number of desired features: ", as.numeric(desired), "\n")
 
       fname.merge = Reduce(intersect, strsplit(bestWHlist$datasets, split = "synth"))
-      current_res = extractAndSave(bestWHlist, desired, fnames = bestWHlist$datasets,
-                             fname.add = fname.merge)
+      current_res <- extractAndSave(
+        bestWHlist, desired, fnames = bestWHlist$datasets, fname.add = fname.merge
+      )
 
       NMF_result = c(NMF_result, current_res)
 
@@ -209,11 +215,14 @@ if(.type == "synthet"){
   
   # store results of stats runs in one list
   NMF_result_list = vector("list", runs) 
+  
+  # run <- 1
   for(run in 1:runs){
     
     sub.dir.RData = file.path(sub.dir.RData.tmp, paste0("run", run))
     load(file.path(sub.dir.RData, "NMF_result.RData"))
     NMF_result_list[[run]] = NMF_result
+    
   }
   
   saveRDS(NMF_result_list, file = file.path(sub.dir.RData.tmp, "NMF_result_list.RData"))

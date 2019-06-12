@@ -124,7 +124,6 @@ for(desg in seq_along(designs_char)){
   # runDir <- runDirs_char[1]
   
   # for(runDir in runDirs_char){
-  a <- Sys.time()
   simResults_ls <- lapply(runDirs_char, function(runDir){
     
     ######  Data Array List  ##################################################
@@ -367,5 +366,4 @@ for(desg in seq_along(designs_char)){
 
 Sys.time() - a
 
-# For 12 design points iterating over 100 simulation runs:
-# 16.61194 hours
+# For 12 design points iterating over 100 simulation runs: 1.56 hours
