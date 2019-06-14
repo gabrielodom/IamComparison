@@ -218,20 +218,47 @@ sCCAmethyl_char <- scan(
 # MOVED TO test_pathwayPCA/global_functions.R
 
 # Test
-pathwayFisherExact(
+geCounts_int <- confusion(
   pathway = gene_PC$pathways$path1,
   allFeatures_char = allGenes_char,
   deFeatures_char = sCCAgenes_char
 )
+# pathwayFisherExact(geCounts_int)
+
+metCounts_int <- confusion(
+  pathway = methyl_PC$pathways$path1,
+  allFeatures_char = allSites_char,
+  deFeatures_char = sCCAmethyl_char
+)
+# pathwayFisherExact(metCounts_int)
+# # The sample size is much larger here, so the p-value will be smaller. Is
+# #   it a more "fair" comparison to measure pathway significance based on 
+# #   gene expression alone? Shouldn't a proper multi-omic procedure have
+# #   an integrated pathway p-value?
+# # From their function file drawROC.R, the calculateACC() function simply
+# #   sums the TP, TN, FP, and FN counts for both data sets. Their code is:
+# TP = as.numeric(TP_ge + TP_met)
+# FP = as.numeric(FP_ge + FP_met)
+# TN = as.numeric(TN_ge + TN_met)
+# FN = as.numeric(FN_ge + FN_met)
+# pathwayFisherExact(geCounts_int + metCounts_int)
 
 
 ###  Apply Time  ###
-sCCA_pVals <- sapply(
+jointPathways_ls <- mapply(c, 
   gene_PC$pathways,
-  pathwayFisherExact,
-  allFeatures_char = allGenes_char,
-  deFeatures_char = sCCAgenes_char
+  methyl_PC$pathways,
+  SIMPLIFY = FALSE
 )
+
+sCCAconfusion_ls <- lapply(
+  jointPathways_ls,
+  confusion,
+  allFeatures_char = c(allGenes_char, allSites_char),
+  deFeatures_char = c(sCCAgenes_char, sCCAmethyl_char)
+)
+
+sCCA_pVals <- sapply(sCCAconfusion_ls, pathwayFisherExact)
 
 
 
@@ -318,7 +345,7 @@ resultsClean_df <-
 
 write_csv(
   resultsClean_df,
-  path = "results/sim_sCCA_20190610/all_designs_15runs.csv"
+  path = "results/sim_sCCA_20190610/sCCA_all_designs_15runs_20190614.csv"
 )
 
 

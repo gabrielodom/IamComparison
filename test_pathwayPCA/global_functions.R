@@ -123,8 +123,8 @@ pathSignif <- function(pathway, resp, omicsOut1, omicsOut2){
   
 }
 
-pathwayFisherExact <- function(pathway, allFeatures_char, deFeatures_char){
-  # browser()
+
+confusion <- function(pathway, allFeatures_char, deFeatures_char){
   
   # ! in pathway
   outside_char <- setdiff(allFeatures_char, pathway)
@@ -132,26 +132,34 @@ pathwayFisherExact <- function(pathway, allFeatures_char, deFeatures_char){
   unexpressed_char <- setdiff(allFeatures_char, deFeatures_char)
   
   ###  2x2 Counts  ###
-  # Genes in pw1 & marked as DE
+  # Genes in pw & marked as DE
   n1 <- length(
     intersect(pathway, deFeatures_char)
   )
-  # Genes !(in pw1) & marked as DE
+  # Genes !(in pw) & marked as DE
   n2 <- length(
     intersect(outside_char, deFeatures_char)
   )
-  # Genes in pw1 & !(marked as DE)
+  # Genes in pw & !(marked as DE)
   n3 <- length(
     intersect(pathway, unexpressed_char)
   )
-  # Genes !(in pw1) & !(marked as DE)
+  # Genes !(in pw) & !(marked as DE)
   n4 <- length(
     intersect(outside_char, unexpressed_char)
   )
   
-  ###  Fisher Exact Test for Overexpression  ###
+  ###  Return  ###
+  c(n1, n2, n3, n4)
+  
+}
+
+pathwayFisherExact <- function(counts_int){
+  # browser()
+  
+  # Fisher Exact Test for overexpression
   fisher.test(
-    matrix(c(n1, n2, n3, n4), ncol = 2, byrow = TRUE),
+    matrix(counts_int, ncol = 2, byrow = TRUE),
     alternative = "greater"
   )$p.value
   
