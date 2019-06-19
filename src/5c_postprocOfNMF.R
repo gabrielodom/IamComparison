@@ -157,7 +157,11 @@ if(.type == "synthet"){
   sub.dir.RData.tmp = sub.dir.RData
   
   # run <- 1
-  for(run in 1:runs){
+  # SWITCH: over the NYC trip, we will run 1:43 for sCCA and 44:86 for NNMF.
+  #   Then, on the morning of Tuesday, 25 June, we swap these indices. This
+  #   ensures that both methods had read ability on the main data files.
+  for(run in 44:86){
+    # for(run in 1:runs){
     
     cat("Current stats run:", run, "\n")
     

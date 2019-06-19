@@ -131,7 +131,11 @@ if(.type == "synthet"){
   # run <- 1
   # Each run over 12 design points takes 2.6 hours. We will set up a run that
   #   will finish the morning of the day after tomorrow (39 hours later)
-  for(run in 1:runs){
+  # SWITCH: over the NYC trip, we will run 1:43 for sCCA and 44:86 for NNMF.
+  #   Then, on the morning of Tuesday, 25 June, we swap these indices. This
+  #   ensures that both methods have read ability on the main data files.
+  for(run in 1:43){
+  # for(run in 1:runs){
     
     cat("Current stats run:", run, "\n")
     sub.dir.files = file.path(sub.dir.files.tmp, paste0("run", run))

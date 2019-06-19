@@ -34,7 +34,7 @@
 #          one with 2 percent of features DE in perturbed pathways 
 #          and another with 10 percent of features DE in perturbed pathways 
 #          between conditions
-.percentage.pw = c(10, 20, 50, 100)
+.percentage.pw = c(10, 15, 20, 50)
 
 # proportion of features additionally simulated as different between conditions
 # and randomly spread on a dataset
@@ -46,10 +46,10 @@
 # example: c(0.2, 0.4) means that two simulation runs are performed
 #          one with a weak mean DE signal in DE features and 
 #          and another with a moderate mean DE signal in DE features. 
-.effect.size = c(0.2, 0.4, 0.8)
+.effect.size = c(0.2, 0.3, 0.4, 0.6)
 
 # number of datasets to create with each set of parameters (for performance statistics)
-.stats.runs = 15
+.stats.runs = 100
 # .stats.runs = 10 # test the process first; the process works!
 
 # create random seed for each run
