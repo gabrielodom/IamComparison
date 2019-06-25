@@ -140,18 +140,21 @@ system.time(
 )
 # 17.8418 hrs for 10 repititions (9 design points). 36.19844 hrs for 15 reps by
 #   12 design points.
+# 140.3611 hours for 43 reps by 16 design points
 
 # do NMF on synthetic data
 system.time(
   source(file.path(.src.dir, "5a_preprocForNMF.R"))
 )
 # 7.067167 min (9 design points). 8.718 min for 15 reps by 12 design points.
+# 31.7375, 30.79133 min for 43 reps by 16 design points
 
 system.time(
   source(file.path(.src.dir, "5b_NMF.R"))
 )
 # 15.59804 hrs for 10 repititions (9 design points). 33.98197 hrs for 15 reps
 #   by 12 design points
+# 123.162 hours for 43 reps by 16 design points
 
 system.time(
   source(file.path(.src.dir, "5c_postprocOfNMF.R"))
