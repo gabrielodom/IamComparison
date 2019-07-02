@@ -140,7 +140,7 @@ system.time(
 )
 # 17.8418 hrs for 10 repititions (9 design points). 36.19844 hrs for 15 reps by
 #   12 design points.
-# 140.3611 hours for 43 reps by 16 design points
+# 140.3611 hours for 1:43 reps by 16 design points; 145.0278 hours for 44:86.
 
 # do NMF on synthetic data
 system.time(
