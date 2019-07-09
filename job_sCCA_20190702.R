@@ -21,6 +21,12 @@ source(file.path(.project.dir, "src/2_setDirPath.R"))
 # Please download this from https://github.com/compgenome365/TCGA-Assembler-2
 .TCGA.assembler.dir = "F:/TCGA-Assembler-2/"
 
+if(Sys.info()["sysname"] == "Linux"){
+  .useMALA_logi <- TRUE
+} else {
+  .useMALA_logi <- FALSE
+}
+
 
 
 ######  run comparison on synthetic datasets  #################################

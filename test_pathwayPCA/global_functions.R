@@ -112,13 +112,24 @@ pathSignif <- function(pathway, resp, omicsOut1, omicsOut2){
   LRpVal <- pchisq(path_aov[2, 4], df = path_aov[2, 3], lower.tail = FALSE)
   
   
+  # global p-value of interaction
+  pathInter_mod <- glm(Resp ~ ome1 * ome2, family = binomial, data = path_df)
+  pathInter_aov <- anova(null_mod, pathInter_mod)
+  LRinterpVal <- pchisq(
+    pathInter_aov[2, 4],
+    df = pathInter_aov[2, 3],
+    lower.tail = FALSE
+  )
+  
+  
   # Return
   pVals_df <- data.frame(
     ome1 = ome1p,
     ome2 = ome2p,
-    global = LRpVal
+    global = LRpVal,
+    interactMod = LRinterpVal
   )
-  rownames(pVals_df) = "pValue"
+  rownames(pVals_df) <- "pValue"
   pVals_df
   
 }

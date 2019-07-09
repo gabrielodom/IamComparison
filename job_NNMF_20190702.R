@@ -11,15 +11,21 @@
 rm(list = ls(all.names = TRUE))
 
 # Please set path to the Project folder 
-.project.dir = "C:/Users/gjo15/Documents/GitHub/IamComparison"
-.dataset.list = "tcga_brca.RData"
-.current.run = "GeneExp_Met_2DS"
+.project.dir <- "C:/Users/gjo15/Documents/GitHub/IamComparison"
+.dataset.list <- "tcga_brca.RData"
+.current.run <- "GeneExp_Met_2DS"
 
 source(file.path(.project.dir, "src/2_setDirPath.R"))
 
 # TCGA Assembler directory
 # Please download this from https://github.com/compgenome365/TCGA-Assembler-2
 .TCGA.assembler.dir = "F:/TCGA-Assembler-2/"
+
+if(Sys.info()["sysname"] == "Linux"){
+  .useMALA_logi <- TRUE
+} else {
+  .useMALA_logi <- FALSE
+}
 
 
 

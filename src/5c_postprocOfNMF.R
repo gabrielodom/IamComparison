@@ -160,10 +160,11 @@ if(.type == "synthet"){
   # SWITCH: over the NYC trip, we will run 1:43 for sCCA and 44:86 for NNMF.
   #   Then, on the morning of Tuesday, 25 June, we swap these indices. This
   #   ensures that both methods had read ability on the main data files.
-  for(run in 87:93){
+  # for(run in 94:100){
+  # for(run in 87:93){
   # for(run in 1:43){
   # for(run in 44:86){
-  # for(run in 1:runs){
+  for(run in 1:runs){
     
     cat("Current stats run:", run, "\n")
     
@@ -222,7 +223,10 @@ if(.type == "synthet"){
   # store results of stats runs in one list
   NMF_result_list = vector("list", runs) 
   
-  # run <- 1
+  # for(run in 94:100){
+  # for(run in 87:93){
+  # for(run in 1:43){
+  # for(run in 44:86){
   for(run in 1:runs){
     
     sub.dir.RData = file.path(sub.dir.RData.tmp, paste0("run", run))
