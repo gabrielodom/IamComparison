@@ -47,3 +47,5 @@ data2_df
 #   worse. We can't detect anything unless *both* data sets are close to
 #   significant.
 # I think we need a different simulation study...
+# Perhaps the reason this isn't working is due to the independence of the two
+#   data platforms?
