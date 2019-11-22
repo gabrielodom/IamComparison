@@ -345,7 +345,7 @@ resultsClean_df <-
 
 write_csv(
   resultsClean_df,
-  path = "results/sim_sCCA_20190610/sCCA_all_designs_15runs_20190614.csv"
+  path = "results/sim_sCCA/sCCA_all_designs_15runs_20190614.csv"
 )
 
 

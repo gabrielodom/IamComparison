@@ -1,16 +1,16 @@
-# Test NNMF Multi-Omics
+# Test sCCA Multi-Omics
 # Gabriel Odom
 # 2019-07-08
 
 
 
 ######  Description and Overview  #############################################
-# We have simulation results from NNMF under the same simulation parameters as
+# We have simulation results from sCCA under the same simulation parameters as
 #   the pathwayPCA multi-omics sim. They are
 #   - ngroups = 20
 #   - p = 1600 (gene expression) & 2400 (DNA methylation)
-#   - DE% = 10, 15, 20, 50%
-#   - DEsize = 2x, 3x, 4x, 6x
+#   - DE% = 10, 20, 50, 100%
+#   - DEsize = 2x, 4x, 8x
 #   - Background DE = 0% (this is a departure from the Pucher paper's 1%)
 
 # I need the genes identified as DE within each run at each design point. Then,
@@ -23,23 +23,20 @@
 #   !DE            n3                   n4      1400
 #   Total          80                 1520      1600
 #   
+# I'm not 100% sure on this. Should I be comparing the gene expression or the
+#   DNA methylation? The counts for methylation will be out of 2400 instead of
+#   1600. Also, n1, n2, n3, and n3 are based on the genes *identified as* DE by
+#   the sCCA algorithm, not the truth. This should give me a p-value for each
+#   pathway.
+# EDIT: Lily said to use the 1600 for gene expression.
 
 # Now that we have a p-value for each pathway, we also need to know the true
 #   pathways. For this, we have to call back to the original data, and calculate
 #   which pathways are truly DE. Then, finally, we can compare the decisions
-#   made with the Fisher's Exact Test with the true pathways. 
-# NOTE: the Pucher et al. paper create two such tables, then add each of the
-#   counts across data type, yielding
-#   
-#        In Pathway g     Not in Pathway g     Total
-#    DE            N1                   N2       500
-#   !DE            N3                   N4      3500
-#   Total         200                 3800      4000
-#   
-#   This equally weights features from both data sets, so a single site is 
-#   worth as much as an entire gene -- quite foolish.
-
-
+#   made with the Fisher's Exact Test with the true pathways. I am expecting the
+#   power of sCCA to be quite high (as Fisher's test can be sensitive to small
+#   changes when you have very large counts), but I think the Type-I error of
+#   sCCA might be inflated.
 
 
 ######  Setup  ################################################################
@@ -77,7 +74,6 @@ designs_char <- c(
 
 results_ls <- lapply(designs_char, function(desg){
   
-  
   localParams_num <- 
     str_split(desg, "_") %>% 
     unlist() %>% 
@@ -87,7 +83,7 @@ results_ls <- lapply(designs_char, function(desg){
   
   
   
-  ######  Pathway Collections  ################################################
+  ######  Pathway Collections  ##################################################
   ###  Gene Expression Pathways  ###
   # vector of all gene names
   allGenes_char <- paste0("ge_", seq_len(p.gene.exp))
@@ -130,50 +126,60 @@ results_ls <- lapply(designs_char, function(desg){
   rm(methylPaths_ls)
   
   
-  ######  Apply over Runs  ####################################################
+  ######  Apply over Runs  ######################################################
   
-  # NNMF Results are in
-  resDir <- paste0(dataDir, "synthetNMF/supervised_k2-ES/files/")
+  # sCCA Results are in
+  resDir <- paste0(dataDir, "synthetsCCA/supervised_exact-ES/files/")
   runs <- paste0("run", seq_len(nRuns_int), "/")
   
   # runDir <- runs[1]
   # a <- Sys.time()
   out_ls <- lapply(runs, function(runDir){
     
-    ######  Extract New Results  ##############################################
-    # We need to know which features NNMF claims are DE.
+    ######  Extract New Results  ##################################################
+    # We need to know which features sCCA claims are DE.
     
-    # NNMF Genes
-    geneRes_path <- paste0("NMF_GeneExp_synth_", desg, ".txt")
-    NNMFgenes_char <- scan(
+    # sCCA Genes
+    geneRes_path <- paste0("sCCA_GeneExp_synth_", desg, ".txt")
+    sCCAgenes_char <- scan(
       paste0(resDir, runDir, geneRes_path),
       what = character()
     )
     
-    # NNMF Methylated Sites
-    methylRes_path <- paste0("NMF_Methyl_synth_", desg, ".txt")
-    NNMFmethyl_char <- scan(
+    # sCCA Methylated Sites
+    methylRes_path <- paste0("sCCA_Methyl_synth_", desg, ".txt")
+    sCCAmethyl_char <- scan(
       paste0(resDir, runDir, methylRes_path),
       what = character()
     )
     
     
     
-    ######  Fisher's Exact Test for All Pathways  #############################
-    # geCounts_int <- confusion(
-    #   pathway = gene_PC$pathways$path1,
-    #   allFeatures_char = allGenes_char,
-    #   deFeatures_char = NNMFgenes_char
-    # )
+    ######  Fisher's Exact Test for All Pathways  #################################
+    # Test
+    geCounts_int <- confusion(
+      pathway = gene_PC$pathways$path1,
+      allFeatures_char = allGenes_char,
+      deFeatures_char = sCCAgenes_char
+    )
     # pathwayFisherExact(geCounts_int)
     
-    # metCounts_int <- confusion(
-    #   pathway = methyl_PC$pathways$path1,
-    #   allFeatures_char = allSites_char,
-    #   deFeatures_char = NNMFmethyl_char
-    # )
+    metCounts_int <- confusion(
+      pathway = methyl_PC$pathways$path1,
+      allFeatures_char = allSites_char,
+      deFeatures_char = sCCAmethyl_char
+    )
     # pathwayFisherExact(metCounts_int)
-    
+    # # The sample size is much larger here, so the p-value will be smaller. Is
+    # #   it a more "fair" comparison to measure pathway significance based on 
+    # #   gene expression alone? Shouldn't a proper multi-omic procedure have
+    # #   an integrated pathway p-value?
+    # # From their function file drawROC.R, the calculateACC() function simply
+    # #   sums the TP, TN, FP, and FN counts for both data sets. Their code is:
+    # TP = as.numeric(TP_ge + TP_met)
+    # FP = as.numeric(FP_ge + FP_met)
+    # TN = as.numeric(TN_ge + TN_met)
+    # FN = as.numeric(FN_ge + FN_met)
     # pathwayFisherExact(geCounts_int + metCounts_int)
     
     
@@ -184,18 +190,18 @@ results_ls <- lapply(designs_char, function(desg){
       SIMPLIFY = FALSE
     )
     
-    NNMFconfusion_ls <- lapply(
+    sCCAconfusion_ls <- lapply(
       jointPathways_ls,
       confusion,
       allFeatures_char = c(allGenes_char, allSites_char),
-      deFeatures_char = c(NNMFgenes_char, NNMFmethyl_char)
+      deFeatures_char = c(sCCAgenes_char, sCCAmethyl_char)
     )
     
-    NNMF_pVals <- sapply(NNMFconfusion_ls, pathwayFisherExact)
+    sCCA_pVals <- sapply(sCCAconfusion_ls, pathwayFisherExact)
     
     
     
-    ######  True DE Pathways  #################################################
+    ######  True DE Pathways  #####################################################
     # Now we need to know which features are truly DE
     
     ###  Differentially-expressed genes  ###
@@ -222,21 +228,20 @@ results_ls <- lapply(designs_char, function(desg){
     )
     
     
-    
-    ######  Return  ###########################################################
+    ######  Return  ###############################################################
     data.frame(
-      pVals = NNMF_pVals,
-      dePath = seq_along(NNMF_pVals) %in% signifPathsG_int
+      pVals = sCCA_pVals,
+      dePath = seq_along(sCCA_pVals) %in% signifPathsG_int
     )
     
     # END for() runs
   })
   # b <- Sys.time()
-  # b - a # 1.070069 sec for 15 reps
+  # b - a # 0.7188621 sec for 15 reps
   
   names(out_ls) <- paste0("run", seq_len(nRuns_int))
   out_df <- bind_rows(out_ls, .id = "run")
-  # saveRDS(out_df, file = "results/sim_NNMF/res_100_80.RDS")
+  # saveRDS(out_df, file = "results/sim_sCCA_20190610/res_100_80.RDS")
   
   out_df
   
@@ -254,16 +259,5 @@ resultsClean_df <-
 
 write_csv(
   resultsClean_df,
-  path = "results/sim_NNMF/NNMF_all_designs_100runs_20190710.csv"
+  path = "results/sim_sCCA/sCCA_all_designs_100runs_20190708.csv"
 )
-
-
-# res100_80_df %>% 
-#   mutate(claimDE = pVals < 0.05) %>% 
-#   mutate(T1err = claimDE & !dePath) %>% 
-#   mutate(T2err = (!claimDE) & dePath) %>% 
-#   group_by(run) %>% 
-#   summarise(
-#     pctT1 = mean(T1err),
-#     pctT2 = mean(T2err)
-#   )

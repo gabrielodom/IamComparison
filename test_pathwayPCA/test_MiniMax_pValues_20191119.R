@@ -5,7 +5,8 @@
 library(tidyverse)
 
 ######  Find the Simulation Results  ##########################################
-top_dir <- "C:/Users/godom/"
+# top_dir <- "C:/Users/godom/" # FIU
+top_dir <- "C:/Users/gjo15/" # UM
 proj_dir <- "Dropbox (BBSR)/pathwayPCA_multiOmics/"
 res_dir <- "pathwayPCA_multiOmics_synthetic/sim_20190708/"
 
@@ -14,7 +15,7 @@ resultFiles_char <- list.files(
 )
 
 data_ls <- readRDS(
-  paste0(top_dir, proj_dir, res_dir, resultFiles_char[1])
+  paste0(top_dir, proj_dir, res_dir, resultFiles_char[1600])
 )
 
 

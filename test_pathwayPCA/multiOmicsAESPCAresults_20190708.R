@@ -9,7 +9,7 @@ in_path <- "results/sim_20190708/"
 aespcaFiles_char <- list.files(in_path)
 
 n.groups <- 20
-pValues_num <- c(0.001, seq(0.005, 0.395, by = 0.005), 0.499)
+pValues_num <- c(0.001, seq(0.005, 0.495, by = 0.005), 0.499)
 
 # file <- aespcaFiles_char[1]
 a <- Sys.time()

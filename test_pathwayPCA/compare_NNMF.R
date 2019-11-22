@@ -304,7 +304,7 @@ results_ls <- lapply(designs_char, function(desg){
   
   names(out_ls) <- paste0("run", 1:15)
   out_df <- bind_rows(out_ls, .id = "run")
-  # saveRDS(out_df, file = "results/sim_NNMF_20190614/res_100_80.RDS")
+  # saveRDS(out_df, file = "results/sim_NNMF/res_100_80.RDS")
   
   out_df
   
@@ -322,7 +322,7 @@ resultsClean_df <-
 
 write_csv(
   resultsClean_df,
-  path = "results/sim_NNMF_20190614/NNMF_all_designs_15runs.csv"
+  path = "results/sim_NNMF/NNMF_all_designs_15runs.csv"
 )
 
 
