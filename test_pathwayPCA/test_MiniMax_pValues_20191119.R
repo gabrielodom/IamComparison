@@ -70,7 +70,12 @@ tabulateSimResults <- function(designFile_char){
   
   ###  Table of p-Values  ###
   designSpecs_df <- data.frame(
-    t(data_ls$parameters[c("pctDE", "pctEffectSize")])
+    t(data_ls$parameters[c("pctDE", "pctEffectSize")]),
+    run = str_remove(
+      str_split(data_ls$fileName, "_", simplify = TRUE)[, 5],
+      ".RDS"
+    ),
+    stringsAsFactors = FALSE
   )
   
   data_df <- 
@@ -78,7 +83,7 @@ tabulateSimResults <- function(designFile_char){
     rowwise() %>% 
     mutate(miniMax = max(ome1, ome2, na.rm = TRUE)) %>% 
     bind_cols(designSpecs_df[rep(1, nrow(.)), ]) %>% 
-    select(pctDE, pctEffectSize, DEpath, everything()) %>% 
+    select(pctDE, pctEffectSize, run, DEpath, everything()) %>% 
     select(-pathway, -interactMod)
   
   
@@ -135,7 +140,7 @@ tabulateSimResults <- function(designFile_char){
 
 # test
 tabulateSimResults(designFile_char = resultFiles_char[800]) %>% View
-tabulateSimResults(designFile_char = resultFiles_char[100]) %>% View
+tabulateSimResults(designFile_char = resultFiles_char[3]) %>% View
 
 
 
@@ -146,7 +151,7 @@ system.time(
     .f = tabulateSimResults
   )
 )
-# 20.678 seconds on mac
+# 20.975 seconds on mac
 
 write_csv(
   pathwayPCA_miniMax_results_df,
@@ -155,6 +160,13 @@ write_csv(
     "data/pathwayPCA_results/", "miniMax_results_100runs_20191122.csv"
   )
 )
+# saveRDS(
+#   pathwayPCA_miniMax_results_df,
+#   file = paste0(
+#     top_dir, proj_dir, "pathwayPCA_multiOmics_synthetic/",
+#     "data/pathwayPCA_results/", "miniMax_results_100runs_20191122.RDS"
+#   )
+# )
 # for some strange reason, write_csv either save "True" as TRUE or Excel
 #   interprets "True" as TRUE. I don't know which.
 # write_csv(tibble(test = "TRUE", test2 = "True", test3 = TRUE), "test.csv")
