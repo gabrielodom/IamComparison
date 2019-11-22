@@ -149,7 +149,24 @@ data.dir = switch(.type,
 
 if(.type == "synthet"){
   
-  pattern = "bestWHlist"
+  ###  Design Points  ###
+  # We ran into an issue where we had files left over from a previous simulation
+  #   run. This script performs post-processing on *all* files in the run
+  #   directory, including those with different design points than the current
+  #   run.
+  designPts_df <- expand.grid(
+    .n.groups,
+    .percentage.pw,
+    .effect.size * 100
+  )
+  designs_char <- paste0(
+    designPts_df[, 1], "gr_",
+    designPts_df[, 2], "p_",
+    designPts_df[, 3]
+  )
+  
+  # pattern = "bestWHlist"
+  patterns <- paste("bestWHlist", designs_char, sep = "_")
 
   runs = .stats.runs
   sub.dir.files.tmp = sub.dir.files
@@ -172,7 +189,11 @@ if(.type == "synthet"){
     sub.dir.figures = file.path(sub.dir.figures.tmp, paste0("run", run))
     sub.dir.RData = file.path(sub.dir.RData.tmp, paste0("run", run))
     
-    results = list.files(sub.dir.RData, pattern)
+    results <- sapply(
+      patterns, function(x) list.files(sub.dir.RData, pattern = x),
+      USE.NAMES = FALSE
+    )
+    # results = list.files(sub.dir.RData, pattern)
     NMF_result = list()
     
     # i <- 1

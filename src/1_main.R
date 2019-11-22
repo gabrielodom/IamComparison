@@ -159,7 +159,7 @@ system.time(
 system.time(
   source(file.path(.src.dir, "5c_postprocOfNMF.R"))
 )
-# 3.747 min (9 design points).
+# 3.747 min (9 design points). 15.99167 min for 100 reps X 16 design points
 
 
 useMALA <- .useMALA_logi
