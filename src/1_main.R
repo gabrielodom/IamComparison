@@ -142,6 +142,9 @@ system.time(
 #   12 design points.
 # 140.3611 hours for 1:43 reps by 16 design points; 145.0278 hours for 44:86.
 
+# sCCA TIME (one rep, in minutes)
+(17.8418 / 90) * 60
+
 # do NMF on synthetic data
 system.time(
   source(file.path(.src.dir, "5a_preprocForNMF.R"))
@@ -160,6 +163,9 @@ system.time(
   source(file.path(.src.dir, "5c_postprocOfNMF.R"))
 )
 # 3.747 min (9 design points). 15.99167 min for 100 reps X 16 design points
+
+# NNMF TIME (one rep, in minutes):
+(7.067167 / 9) + (15.59804 * 60 / 90) + (3.747 / 9)
 
 
 useMALA <- .useMALA_logi
