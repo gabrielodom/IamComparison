@@ -313,9 +313,14 @@ for(run in 1:stats.runs){
   
   invisible(
     mapply(
-      calculatePwAUC, result_list,
-      list(PW_idx), method, synthet.run, 
-      run, dest, measure = "mcc"
+      calculatePwAUC,
+      feature_list = result_list,
+      PW_idx = list(PW_idx),
+      method = method,
+      synthet.run = synthet.run, 
+      stats.run = run,
+      dest.dir = dest,
+      measure = "mcc"
     )
   )
   

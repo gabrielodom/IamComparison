@@ -46,6 +46,15 @@ adjustNorm = function(matrix, large.number = 5000){
 # fit data matrices to non-negativity constraints using method 
 # suggested by Kim and Tidor (2003)
 #####------------------------------------------------------------------
+# ODOM 20200907: this will split each column of the matrix into positive and
+#   negative components, then drop the sign of the negative components. For
+#   example, the column
+#     1
+#    -2
+#   will be split into two columns:
+#     1 0
+#     0 2
+
 splitColumns = function(mtx){
   doubled.mtx = matrix(0, nrow = nrow(mtx), ncol = ncol(mtx)*2) 
   doubled.nms = character(length(dimnames(mtx)[[2]])*2)
